@@ -1,0 +1,69 @@
+"""
+SARA 2.0 (standalone) — Azure Functions app (Python v2 programming model).
+
+Exposes two HTTP endpoints for the adviser self-serve pre-vet:
+    POST /api/soa/prevet   -> SOA pre-vet
+    POST /api/roa/prevet   -> RoA pre-vet (s946B reliance)
+
+The Anthropic key is resolved from Azure Key Vault (see sara_engine.get_anthropic_key).
+CORS for the icomply2 site is configured on the Function App (CORS blade / settings);
+the permissive headers below are a belt-and-braces fallback for OPTIONS preflight.
+"""
+
+import json
+import logging
+
+import azure.functions as func
+
+from sara_engine import run_prevet
+
+# AuthLevel.FUNCTION requires an x-functions-key. If you front the Function with
+# APIM / Easy Auth, or serve it same-origin behind the authenticated portal, you
+# may switch this to func.AuthLevel.ANONYMOUS.
+app = func.FunctionApp(http_auth_level=func.AuthLevel.FUNCTION)
+
+_CORS = {
+    "Access-Control-Allow-Origin": "*",   # tighten to https://icomply2app.com.au in production
+    "Access-Control-Allow-Headers": "Content-Type, x-functions-key",
+    "Access-Control-Allow-Methods": "POST, OPTIONS",
+}
+
+
+def _json(body, status=200):
+    headers = {"Content-Type": "application/json", **_CORS}
+    return func.HttpResponse(json.dumps(body), status_code=status, headers=headers)
+
+
+def _handle(role, req: func.HttpRequest) -> func.HttpResponse:
+    if req.method == "OPTIONS":
+        return func.HttpResponse(status_code=204, headers=_CORS)
+    try:
+        payload = req.get_json()
+    except ValueError:
+        payload = {}
+    try:
+        result = run_prevet(role, payload)
+        logging.info(
+            "[%s] permitted=%s review=%s findings=%d",
+            role, result.get("roaPermitted"),
+            result.get("requiresComplianceReview"),
+            len(result.get("findings", [])),
+        )
+        return _json(result)
+    except Exception as e:  # surface the message to the UI toast
+        logging.exception("pre-vet failed")
+        return func.HttpResponse(
+            f"{type(e).__name__}: {e}",
+            status_code=500,
+            headers={"Content-Type": "text/plain", **_CORS},
+        )
+
+
+@app.route(route="soa/prevet", methods=["POST", "OPTIONS"])
+def soa_prevet(req: func.HttpRequest) -> func.HttpResponse:
+    return _handle("soa", req)
+
+
+@app.route(route="roa/prevet", methods=["POST", "OPTIONS"])
+def roa_prevet(req: func.HttpRequest) -> func.HttpResponse:
+    return _handle("roa", req)

@@ -1,0 +1,254 @@
+"""
+SARA 2.0 (standalone) — pre-vet engine.
+
+Runs the SOA and RoA pre-vets with Claude (Opus 4.8, adaptive thinking, structured
+output), returning the RelianceResult shape the front-end renders.
+
+The Anthropic API key is read from **Azure Key Vault** using the Function App's
+managed identity (DefaultAzureCredential). No secret is stored in code or in the
+front-end. See get_anthropic_key() for the resolution order.
+
+This module has no Azure-Functions dependency, so it can also be exercised from a
+plain script or unit test.
+"""
+
+import json
+import os
+import threading
+
+# ---- configuration (all via app settings / environment) ----
+MODEL = os.environ.get("SARA_MODEL", "claude-opus-4-8")
+KEY_VAULT_URI = os.environ.get("KEY_VAULT_URI", "")            # e.g. https://kv-icomply2.vault.azure.net/
+ANTHROPIC_SECRET_NAME = os.environ.get("ANTHROPIC_SECRET_NAME", "anthropic-api-key")
+
+MAX_DOC_CHARS = 200_000     # per-document cap (a real SOA is ~50k chars)
+MAX_TOTAL_CHARS = 700_000
+
+_key_lock = threading.Lock()
+_cached_key = None
+_client = None
+
+
+# --------------------------------------------------------------------------
+# Secret + client management
+# --------------------------------------------------------------------------
+def get_anthropic_key():
+    """
+    Resolve the Anthropic API key, in this order:
+      1. ANTHROPIC_API_KEY env var — works both for local dev AND for a
+         Key Vault *reference* set on the Function App
+         (e.g. @Microsoft.KeyVault(SecretUri=https://.../secrets/anthropic-api-key/)).
+      2. Direct Key Vault fetch with the app's managed identity, when
+         KEY_VAULT_URI is set. This is the explicit Key Vault path.
+    """
+    global _cached_key
+    env_key = os.environ.get("ANTHROPIC_API_KEY")
+    if env_key:
+        return env_key
+
+    if _cached_key:
+        return _cached_key
+
+    with _key_lock:
+        if _cached_key:
+            return _cached_key
+        if not KEY_VAULT_URI:
+            raise RuntimeError(
+                "No Anthropic key available. Set ANTHROPIC_API_KEY (or a Key Vault "
+                "reference) or set KEY_VAULT_URI so the key can be read from Key Vault."
+            )
+        # Imported lazily so local runs without azure libs still import this module.
+        from azure.identity import DefaultAzureCredential
+        from azure.keyvault.secrets import SecretClient
+        cred = DefaultAzureCredential()
+        sc = SecretClient(vault_url=KEY_VAULT_URI, credential=cred)
+        _cached_key = sc.get_secret(ANTHROPIC_SECRET_NAME).value
+        return _cached_key
+
+
+def _get_client():
+    global _client
+    if _client is None:
+        import anthropic
+        _client = anthropic.Anthropic(api_key=get_anthropic_key())
+    return _client
+
+
+# --------------------------------------------------------------------------
+# Structured output schema — exactly the RelianceResult the UI renders
+# --------------------------------------------------------------------------
+RESULT_SCHEMA = {
+    "type": "object",
+    "properties": {
+        "roaPermitted": {"type": "boolean"},
+        "requiresComplianceReview": {"type": "boolean"},
+        "summary": {"type": "string"},
+        "adviserSuggestion": {"type": "string"},
+        "findings": {
+            "type": "array",
+            "items": {
+                "type": "object",
+                "properties": {
+                    "testId": {"type": "string"},
+                    "question": {"type": "string"},
+                    "outcome": {"type": "string", "enum": ["Pass", "Review", "Fail"]},
+                    "reasoning": {"type": "string"},
+                    "evidence": {"type": "string"},
+                },
+                "required": ["testId", "question", "outcome", "reasoning", "evidence"],
+                "additionalProperties": False,
+            },
+        },
+    },
+    "required": ["roaPermitted", "requiresComplianceReview", "summary",
+                 "adviserSuggestion", "findings"],
+    "additionalProperties": False,
+}
+
+_BASE = """You are SARA 2.0, an AI compliance reviewer for an Australian AFSL financial-advice \
+business (Insight Management Partners / IIP). You assess the appropriateness and disclosure of \
+advice against the Corporations Act 2001 and the firm's audit framework — you do NOT merely check \
+that sections exist.
+
+Scoring scheme for every test (mirror it exactly):
+  - "Pass"   = the obligation appears met on the evidence provided.
+  - "Review" = ambiguous or insufficient evidence — a human reviewer must confirm.
+  - "Fail"   = the obligation appears not met.
+
+Rules:
+  - Base findings ONLY on the documents provided. Anything not provided is "not provided" — flag it \
+as Review (or Fail if it is mandatory for the role), never invent it.
+  - Quote short evidence (a phrase or document name) in the "evidence" field where you can; use "" if none.
+  - "roaPermitted"/eligibility is true only if NO test failed.
+  - "requiresComplianceReview" is true if ANY test is Review or Fail (the SARA escalation rule).
+  - "adviserSuggestion": give concrete remediation coaching for any concerns OR low-level observations \
+to tidy (typos, internal inconsistencies, blanks); use "" only if the file is genuinely flawless.
+  - Be precise and conservative; a false "Pass" is worse than a cautious "Review".
+"""
+
+_ROLE_PROMPTS = {
+    "roa": _BASE + """
+ROLE: RoA pre-vet — decide whether this Record of Advice may rely on the prior SOA under s946B \
+("further advice"). Run these tests, one finding each, in order:
+  RA-01  Is this further advice suited to an RoA? (Pass if classified as further advice; else Review.)
+  RA-02  Can the prior SOA it relies on be located and is it valid? (Fail if no prior Final/Signed SOA \
+is provided dated before the RoA — s946B reliance cannot be established.)
+  RA-03  Have the client's relevant personal circumstances changed significantly since the SOA? \
+(Compare the prior fact find / SOA against the RoA and any change evidence. Fail if materially changed.)
+  RA-04  Does the further advice stay within the basis and product scope of the SOA? \
+(Fail if it introduces a product class or strategy outside the prior SOA's scope.)
+  RA-05  Does the RoA record the required content and is it retained? (reg 7.7.10AE — brief reasons, \
+basis, record-keeping. Review if content is thin or absent.)
+Set "summary" to a one-line determination (e.g. "RoA permitted — s946B reliance available on current \
+evidence." or "RoA not permitted — escalate to compliance; a new SOA may be required.").
+""",
+    "soa": _BASE + """
+ROLE: SOA pre-vet — assess the appropriateness and disclosure of this Statement of Advice (SOA) before \
+it goes to the client. The SOA is a SINGLE, self-contained document: assess what the SOA ITSELF \
+contains. Pass a test where the SOA addresses the obligation within its own text; mark Review only \
+where the SOA genuinely omits, leaves blank, or contradicts the relevant content; mark Fail where a \
+mandatory element is clearly absent or the advice is inappropriate. Do NOT flag "Review — supporting \
+documents not provided": the SOA is the document under review, not the whole file.
+
+Produce ONE finding for EACH of the following questions, IN THIS ORDER. Give detailed, specific \
+reasoning that draws actual facts from the SOA (names, figures, products, strategies), and put a short \
+quoted phrase from the SOA in "evidence". Use the given testId; include the legislative basis in the \
+"question" text:
+  OBJ       Did the adviser identify the client's objectives? (s961B(2)(a))
+  FINSIT    Did the adviser identify the financial situation and needs? (s961B(2)(a))
+  RISK      Has the adviser identified the client's risk profile? (s961B(2))
+  SCOPE     Did the adviser identify the subject matter and scope of advice, incl. limitations? (s961B(2)(b))
+  PRODUCT   Does the SOA explain how the recommended product meets the client's objective? (s961G)
+  PROPERTY  Is any direct property (a non-financial product) recommended? (Pass / N/A if none)
+  ALLOC     Does the recommended asset allocation meet the risk profile? (s961B / s961G)
+  JUDGE     Are the adviser's judgements based on the client's relevant circumstances? (s961B(2)(f))
+  NEEDS     Has a needs analysis been completed (incl. insurance where in scope)? (best interests / s961G)
+  FEES      Are fees payable and any remuneration/commissions adequately disclosed? (s947B / conflicted remuneration)
+  PDS       Is a Product Disclosure Statement provided/referenced for the recommended product(s)?
+  OFA       Is an ongoing/annual fee agreement and consent to deduct fees present? (s962)
+  CREDIT    Does the SOA avoid unlicensed credit advice? (NCCP Act 2009)
+
+Read the WHOLE SOA before rating any single recommendation — e.g. an insurance reduction may be \
+justified elsewhere in the document (no dependants, a needs-analysis section). Do not over-flag.
+
+Apply this standard consistently:
+  - ALLOC: compare the RECOMMENDED portfolio weights to the risk profile's stated MIN/MAX ranges. \
+FIRM POLICY: a variance of up to 10 percentage points ABOVE a maximum or BELOW a minimum is permitted. \
+Only treat a recommended weight as a BREACH (Fail) if it is MORE THAN 10 percentage points outside the \
+stated range. Within the ±10pp tolerance the allocation PASSES — record any deviation as a coaching \
+observation, not a Fail. (Example: Property recommended 10% against a 7.5% maximum is +2.5pp — within \
+tolerance, so Pass with a note; a recommendation of 20% against a 7.5% maximum is +12.5pp — a Fail.)
+  - NEEDS / insurance: a documented client election to reduce or cancel cover, with a stated basis \
+(e.g. single, no dependants, or unable to obtain further cover) and the risks of not insuring disclosed, \
+is APPROPRIATE — do not Fail solely because the needs analysis is described as not "thorough".
+  - Internal consistency / document quality: clear tidy-up issues — a figure, cover amount, address or \
+adviser name shown two different ways; a "Draft" marking; figures noted "to be verified"; a missing \
+adviser phone/email — are LOW-LEVEL OBSERVATIONS. List them in "adviserSuggestion"; they do NOT by \
+themselves Fail the file or force compliance review. Only flag Review or Fail where the inconsistency \
+creates genuine ambiguity about WHAT is being recommended, or undermines the appropriateness of the advice.
+
+After the 13 regulatory findings, put any observations in "adviserSuggestion". FORMAT IT AS A LIST: one \
+point per line, each line starting with "- ". You may group with a header line ending in ":" (e.g. \
+"Remediation priorities:" for items tied to a Review/Fail, then "Low-level tidy-ups:" for document-quality \
+points). Keep each point to one sentence. Low-level tidy-ups (typos, blanks, draft marking, figures to \
+verify) do NOT on their own fail the file or force compliance review.
+
+Outcome logic:
+  - "roaPermitted" (here = "eligible for adviser self-approval") = true only if NO regulatory test is Fail.
+  - "requiresComplianceReview" = true if ANY regulatory test is Review or Fail (low-level observations \
+in adviserSuggestion alone do NOT force review).
+  - "summary" = a one-line overall outcome, e.g. "PASS — File Meets Requirements." or \
+"FLAGGED — N concern(s) to address before release."
+""",
+}
+
+
+def _truncate(text, limit):
+    text = text or ""
+    return text if len(text) <= limit else text[:limit] + "\n…[truncated]"
+
+
+def _build_user_text(role, payload):
+    lines = []
+    if role == "roa":
+        lines.append(f"Classified as further advice: {payload.get('classifiedAsFurtherAdvice', True)}")
+
+    docs = payload.get("documents") or []
+    # RoA backward-compat: a payload carrying only `content`.
+    if not docs and payload.get("content"):
+        docs = [{"type": "roa_vetted", "name": "Record of Advice", "content": payload["content"]}]
+
+    if not docs:
+        lines.append("\nNo documents were provided.")
+    else:
+        lines.append("\nDocuments provided (type · name):")
+        budget = MAX_TOTAL_CHARS
+        for d in docs:
+            body = _truncate(d.get("content", ""), MAX_DOC_CHARS)
+            if budget <= 0:
+                body = "[omitted — total size budget reached]"
+            budget -= len(body)
+            lines.append(
+                f"\n### [{d.get('type', 'other')}] {d.get('name', '(unnamed)')}\n"
+                f"{body or '[no text extracted]'}"
+            )
+
+    lines.append("\nReturn the structured pre-vet result.")
+    return "\n".join(lines)
+
+
+def run_prevet(role, payload):
+    """role is 'soa' or 'roa'. Returns a dict matching RESULT_SCHEMA."""
+    if role not in _ROLE_PROMPTS:
+        role = "soa"
+    client = _get_client()
+    resp = client.messages.create(
+        model=MODEL,
+        max_tokens=16000,
+        thinking={"type": "adaptive"},
+        system=_ROLE_PROMPTS[role],
+        output_config={"format": {"type": "json_schema", "schema": RESULT_SCHEMA}},
+        messages=[{"role": "user", "content": _build_user_text(role, payload)}],
+    )
+    text = next((b.text for b in resp.content if b.type == "text"), "")
+    return json.loads(text)

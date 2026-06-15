@@ -1,0 +1,15 @@
+# Python
+.venv/
+venv/
+__pycache__/
+*.py[cod]
+*.egg-info/
+
+# Azure Functions local secrets — NEVER commit
+local.settings.json
+
+# OS / editor
+.DS_Store
+.vscode/
+.idea/
+*.log
