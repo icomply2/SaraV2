@@ -1,0 +1,10 @@
+{
+  "IsEncrypted": false,
+  "Values": {
+    "AzureWebJobsStorage": "UseDevelopmentStorage=true",
+    "FUNCTIONS_WORKER_RUNTIME": "python",
+    "OPENAI_BASE_URL": "https://your-resource.openai.azure.com/openai/v1",
+    "OPENAI_API_KEY": "replace-with-your-key",
+    "OPENAI_SOA_INTAKE_MODEL": "gpt-5-mini"
+  }
+}
