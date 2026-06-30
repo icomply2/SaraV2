@@ -22,8 +22,11 @@ def _load_env_local():
     here = Path(__file__).resolve()
     candidates = [
         here.parents[1] / ".env.local",
+        here.parents[1] / "env.local",
         here.parent / ".env.local",
+        here.parent / "env.local",
         Path.cwd() / ".env.local",
+        Path.cwd() / "env.local",
     ]
     for env_path in candidates:
         if not env_path.exists():

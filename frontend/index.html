@@ -3,7 +3,13 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>SARA 2.0 — Compliance Pre-Vet</title>
+<title>Sara</title>
+<link rel="icon" type="image/png" href="/favicon.png?v=1" />
+<link rel="shortcut icon" type="image/png" href="/favicon.ico?v=1" />
+<link rel="apple-touch-icon" href="/favicon.png?v=1" />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Titillium+Web:wght@400;600;700;800&display=swap" rel="stylesheet" />
 
 <!-- ============================================================================
      SARA 2.0 — Standalone adviser pre-vet (icomply2app.com.au/sara)
@@ -19,7 +25,8 @@
   :root{
     --bg:#f5f7fa; --panel:#ffffff; --panel-2:#f8fafc; --line:#e2e8f0;
     --ink:#1e293b; --muted:#64748b; --faint:#94a3b8;
-    --brand:#1d6fd0; --brand-2:#155bb0; --brand-soft:#eaf2fd;
+    --brand:#202040; --brand-2:#31315c; --brand-soft:#f1f1f6;
+    --login:#202040; --login-page:#e9eaec;
     --pass:#16a34a; --review:#d97706; --fail:#dc2626;
     --pass-bg:#ecfdf3; --review-bg:#fffbeb; --fail-bg:#fef2f2;
     --radius:12px; --shadow:0 1px 3px rgba(15,23,42,.06), 0 1px 2px rgba(15,23,42,.04);
@@ -27,26 +34,180 @@
   *{box-sizing:border-box}
   body{
     margin:0; background:var(--bg); color:var(--ink);
-    font:15px/1.55 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    font:15px/1.55 "Titillium Web",-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
   }
+  body.login-active{background:var(--login-page)}
   a{color:var(--brand)}
-  header{
-    border-bottom:1px solid var(--line); background:var(--panel);
-    padding:16px 28px; display:flex; align-items:center; gap:14px;
+  .login-page{
+    min-height:100vh;display:grid;place-items:center;padding:32px;background:var(--login-page);
   }
-  .logo{
-    width:42px;height:42px;border-radius:10px;flex:none;
-    background:linear-gradient(135deg,var(--brand),var(--brand-2));
-    display:grid;place-items:center;font-weight:800;color:#fff;letter-spacing:.5px;
-    box-shadow:0 3px 10px rgba(29,111,208,.30);
+  .login-card{
+    width:min(400px,100%);background:#fff;border:2px solid var(--login);border-radius:14px;
+    padding:32px 20px 20px;box-shadow:0 26px 70px rgba(32,32,64,.16);
   }
-  header h1{font-size:18px;margin:0;font-weight:700}
-  header p{margin:2px 0 0;color:var(--muted);font-size:13px}
-  .privacy{
-    margin-left:auto;font-size:12px;color:#0f6b3d;background:var(--pass-bg);border:1px solid #bbf7d0;
-    padding:6px 12px;border-radius:999px;
+  .login-logo{
+    display:block;width:210px;max-width:80%;height:auto;margin:0 auto 28px;
   }
-  main{max-width:1120px;margin:0 auto;padding:24px 28px 80px}
+  .login-form{display:grid;gap:14px}
+  .login-form input{
+    width:100%;height:48px;border:1px solid #cbd5e1;border-radius:6px;padding:0 14px;
+    color:var(--login);font:15px/1.2 inherit;background:#fff;
+  }
+  .login-form input:focus{
+    outline:none;border-color:var(--login);box-shadow:0 0 0 3px rgba(32,32,64,.12);
+  }
+  .login-form button{
+    height:46px;border-radius:6px;border:1px solid var(--login);font-weight:700;cursor:pointer;
+  }
+  .login-submit{background:var(--login);color:#fff}
+  .login-secondary{background:#fff;color:var(--login)}
+  .login-divider{display:grid;grid-template-columns:1fr auto 1fr;align-items:center;gap:12px;color:#8892a3;font-size:13px;margin:10px 0}
+  .login-divider:before,.login-divider:after{content:"";height:1px;background:#d7dce4}
+  .login-support{
+    display:block;text-align:center;color:var(--login);font-weight:700;font-size:13px;margin-top:16px;
+  }
+  .app-shell[hidden], .login-page[hidden], .view[hidden]{display:none}
+  .app-shell{min-height:100vh;background:var(--login-page);color:var(--login)}
+  .topbar{
+    height:48px;background:var(--login);color:#fff;padding:0 34px 0 64px;
+    display:flex;align-items:center;justify-content:space-between;
+  }
+  .topbar-brand{font-weight:800;letter-spacing:.5px}
+  .top-actions{display:flex;align-items:center;gap:14px;margin-left:auto}
+  .icon-action{
+    color:#fff;background:transparent;border:0;padding:4px;display:grid;place-items:center;gap:2px;
+    min-width:42px;cursor:pointer;font-size:10px;line-height:1.1;
+  }
+  .icon-action svg{width:18px;height:18px;stroke:currentColor;stroke-width:2;fill:none}
+  .icon-action:hover{background:rgba(255,255,255,.12);border-radius:6px}
+  .profile-dot{
+    width:26px;height:26px;border-radius:50%;background:#f4f5f7;color:var(--login);
+    display:grid;place-items:center;font-weight:800;margin:auto;
+  }
+  .app-layout{display:grid;grid-template-columns:208px 1fr;min-height:calc(100vh - 48px)}
+  .sidebar{background:var(--login);color:#fff;padding:36px 18px}
+  .sidebar-avatar{
+    width:44px;height:44px;border-radius:50%;display:grid;place-items:center;margin:0 auto 34px;
+    background:#fff;color:var(--login);font-size:22px;font-weight:700;
+  }
+  .side-nav{display:grid;gap:10px}
+  .side-item{
+    display:flex;align-items:center;gap:10px;width:100%;height:44px;padding:0 14px;border:0;
+    border-radius:7px;background:transparent;color:#fff;font-weight:700;font-size:13px;cursor:pointer;
+  }
+  .side-item svg{width:19px;height:19px;stroke:currentColor;stroke-width:2;fill:none;flex:none}
+  .side-item.active{background:#343462}
+  .side-item:hover{background:#2b2b55}
+  .side-item.active:hover{background:#343462}
+  .dashboard-main{padding:70px 18px 40px;min-width:0}
+  .view{max-width:1060px;margin:0 auto}
+  .section-title{
+    background:var(--login);color:#fff;border-radius:7px;padding:14px 18px;font-weight:800;margin-bottom:22px;
+  }
+  .review-toolbar{display:grid;grid-template-columns:auto 1.2fr repeat(3,1fr);gap:10px;margin-bottom:18px}
+  .toolbar-btn{height:40px;border:0;border-radius:3px;background:var(--login);color:#fff;font-weight:700;padding:0 14px;cursor:pointer}
+  .toolbar-btn:hover{background:var(--brand-2)}
+  .review-toolbar input,.review-toolbar select{
+    min-width:0;height:40px;border:1px solid #cfd2dc;border-radius:4px;background:#fff;color:var(--login);padding:0 12px;
+  }
+  .review-table{width:100%;border-collapse:separate;border-spacing:0 10px;font-size:13px}
+  .review-table th{
+    background:var(--login);color:#fff;text-align:left;padding:14px 18px;font-size:12px;font-weight:800;
+  }
+  .review-table th:first-child{border-radius:4px 0 0 4px}
+  .review-table th:last-child{border-radius:0 4px 4px 0}
+  .review-table td{background:#fff;border-top:1px solid #d7d9e1;border-bottom:1px solid #d7d9e1;padding:13px 18px;vertical-align:middle}
+  .review-table td:first-child{border-left:1px solid #d7d9e1;border-radius:4px 0 0 4px}
+  .review-table td:last-child{border-right:1px solid #d7d9e1;border-radius:0 4px 4px 0}
+  .reviews-pagination{
+    display:flex;align-items:center;justify-content:space-between;gap:14px;margin-top:12px;
+    color:var(--muted);font-size:13px;flex-wrap:wrap;
+  }
+  .pager-controls{display:flex;align-items:center;gap:8px}
+  .pager-btn{
+    height:34px;min-width:38px;border:1px solid #cfd2dc;border-radius:5px;background:#fff;color:var(--login);
+    font-weight:700;cursor:pointer;padding:0 12px;
+  }
+  .pager-btn:hover:not(:disabled){border-color:var(--login)}
+  .pager-btn:disabled{opacity:.45;cursor:not-allowed}
+  .page-size{height:34px;border:1px solid #cfd2dc;border-radius:5px;background:#fff;color:var(--login);padding:0 8px}
+  .status-select{width:146px;height:28px;border:0;border-radius:3px;color:#fff;font-weight:700;padding:0 8px;background:#5b6068}
+  .status-select.done{background:#38aa89}.status-select.requires-review{background:#d88b24}.status-select.aborted{background:#b8b0b3}
+  .row-actions{display:flex;gap:10px;color:#7a8794}
+  .row-actions button{border:0;background:transparent;color:inherit;padding:0;cursor:pointer}
+  .row-actions button:hover{color:var(--login)}
+  .row-actions button:disabled{opacity:.35;cursor:not-allowed}
+  .row-actions svg{width:16px;height:16px;stroke:currentColor;stroke-width:2;fill:none}
+  .empty-panel{background:#fff;border:1px solid #d7d9e1;border-radius:6px;padding:28px;color:var(--login)}
+  .modal-backdrop{
+    position:fixed;inset:0;background:rgba(15,23,42,.42);display:grid;place-items:center;
+    padding:20px;z-index:20;
+  }
+  .modal-backdrop[hidden]{display:none}
+  .modal{
+    width:min(420px,100%);background:#fff;border:1px solid #d7d9e1;border-radius:8px;
+    box-shadow:0 24px 70px rgba(15,23,42,.25);padding:20px;color:var(--login);
+  }
+  .profile-modal{width:min(940px,100%);max-height:calc(100vh - 56px);overflow:auto;border-top:6px solid var(--login)}
+  .modal h3{margin:0 0 8px;font-size:18px}
+  .profile-modal h3{color:var(--login);font-size:20px;margin-bottom:14px}
+  .modal p{margin:0 0 18px;color:var(--muted)}
+  .profile-section{
+    margin:16px 0 10px;background:var(--login);color:#fff;border-radius:6px;
+    padding:10px 12px;font-weight:800;
+  }
+  .profile-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px 16px}
+  .profile-field label{display:block;font-size:13px;color:var(--login);margin-bottom:4px}
+  .profile-value{
+    min-height:40px;border:1px solid #cfd2dc;border-radius:5px;background:#f8fafc;
+    padding:8px 11px;color:var(--login);word-break:break-word;
+  }
+  .edit-review-form{display:grid;gap:14px;margin-top:14px}
+  .edit-review-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px 16px}
+  .edit-review-field label{display:block;font-size:13px;color:var(--login);margin-bottom:4px}
+  .edit-review-field input,.edit-review-field select{
+    width:100%;height:40px;border:1px solid #cfd2dc;border-radius:5px;background:#fff;color:var(--login);
+    padding:0 11px;font:15px/1.2 inherit;
+  }
+  .edit-review-field input[readonly]{background:#f8fafc;color:var(--muted)}
+  .edit-review-field input:focus,.edit-review-field select:focus{
+    outline:none;border-color:var(--login);box-shadow:0 0 0 3px rgba(32,32,64,.12);
+  }
+  .edit-review-note{font-size:13px;color:var(--muted);margin:0}
+  .wizard-card{max-width:640px;margin:0 auto 18px}
+  .wizard-step-label{font-size:12px;font-weight:800;letter-spacing:.5px;text-transform:uppercase;color:var(--muted);margin-bottom:6px}
+  .client-form{display:grid;gap:14px}
+  .client-form-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px 16px}
+  .client-field label{display:block;font-size:13px;color:var(--login);margin-bottom:4px}
+  .client-field input,.client-field select{
+    width:100%;height:40px;border:1px solid #cfd2dc;border-radius:5px;background:#fff;color:var(--login);
+    padding:0 11px;font:15px/1.2 inherit;
+  }
+  .client-field input:focus,.client-field select:focus{outline:none;border-color:var(--login);box-shadow:0 0 0 3px rgba(32,32,64,.12)}
+  .client-results{display:grid;gap:8px;max-height:220px;overflow:auto}
+  .client-result{
+    border:1px solid #d7d9e1;border-radius:7px;background:#fff;padding:10px 12px;text-align:left;color:var(--login);
+    cursor:pointer;font:inherit;
+  }
+  .client-result:hover,.client-result.selected{border-color:var(--login);box-shadow:0 0 0 1px var(--login) inset}
+  .client-meta{display:block;color:var(--muted);font-size:12px;margin-top:2px}
+  .selected-client-banner{
+    display:flex;align-items:center;justify-content:space-between;gap:12px;background:var(--brand-soft);
+    border:1px solid #d7d9e1;border-radius:8px;padding:10px 12px;margin-bottom:16px;color:var(--login);
+  }
+  .selected-client-banner strong{display:block}
+  .selected-client-banner span{font-size:12px;color:var(--muted)}
+  .upload-step[hidden]{display:none}
+  @media(max-width:760px){.profile-grid{grid-template-columns:1fr}}
+  @media(max-width:760px){.edit-review-grid{grid-template-columns:1fr}}
+  @media(max-width:760px){.client-form-grid{grid-template-columns:1fr}}
+  .modal-actions{display:flex;justify-content:flex-end;gap:10px}
+  .modal-actions button{
+    min-width:96px;height:38px;border-radius:5px;border:1px solid #cfd2dc;
+    background:#fff;color:var(--login);font-weight:700;cursor:pointer;
+  }
+  .modal-actions .danger{background:#b91c1c;border-color:#b91c1c;color:#fff}
+  main{max-width:1120px;margin:0 auto;padding:0}
 
   .intro{color:var(--muted);font-size:14px;margin:0 0 20px;max-width:760px}
 
@@ -55,14 +216,18 @@
     text-align:left;background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);
     padding:16px;cursor:pointer;transition:.15s;color:var(--ink);box-shadow:var(--shadow);
   }
-  .role:hover{border-color:#c5d4e6}
-  .role.active{border-color:var(--brand);box-shadow:0 0 0 1px var(--brand) inset, 0 6px 18px rgba(29,111,208,.12)}
+  .role:hover{border-color:#bbbfd0}
+  .role.active{border-color:var(--brand);box-shadow:0 0 0 1px var(--brand) inset, 0 6px 18px rgba(32,32,64,.14)}
   .role .tag{font-size:11px;text-transform:uppercase;letter-spacing:.8px;color:var(--brand);font-weight:700}
   .role h3{margin:6px 0 4px;font-size:16px}
   .role p{margin:0;color:var(--muted);font-size:13px}
 
   .grid{display:grid;grid-template-columns:1.15fr .85fr;gap:20px;align-items:start}
-  @media(max-width:880px){.grid{grid-template-columns:1fr}.roles{grid-template-columns:1fr}}
+  @media(max-width:880px){
+    .app-layout{grid-template-columns:1fr}.sidebar{padding:14px 18px}.sidebar-avatar{display:none}
+    .side-nav{grid-template-columns:repeat(2,1fr)}.dashboard-main{padding:22px 14px}
+    .review-toolbar{grid-template-columns:1fr}.grid{grid-template-columns:1fr}.roles{grid-template-columns:1fr}
+  }
 
   .card{background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);padding:18px;margin-bottom:18px;box-shadow:var(--shadow)}
   .card h2{margin:0 0 4px;font-size:15px}
@@ -72,7 +237,7 @@
   .check input{width:auto;margin-top:2px}
 
   .drop{
-    border:1.5px dashed #c2d2e6;border-radius:var(--radius);padding:26px;text-align:center;
+    border:1.5px dashed #bbbfd0;border-radius:var(--radius);padding:26px;text-align:center;
     color:var(--muted);cursor:pointer;transition:.15s;background:var(--panel-2);
   }
   .drop.hover{border-color:var(--brand);background:var(--brand-soft);color:var(--ink)}
@@ -107,6 +272,22 @@
 
   /* Results */
   #results{display:none}
+  .result-view-card{
+    max-width:980px;margin:0 auto;height:calc(100vh - 210px);min-height:480px;overflow:hidden;
+    display:flex;flex-direction:column;
+  }
+  #resultBody{min-height:0;display:flex;flex-direction:column;flex:1;overflow:hidden}
+  .result-status{flex:none}
+  .findings-scroll{
+    min-height:0;overflow-y:auto;padding-right:10px;scrollbar-gutter:stable;flex:1;
+    overscroll-behavior:contain;
+  }
+  .findings-scroll::-webkit-scrollbar{width:11px}
+  .findings-scroll::-webkit-scrollbar-track{background:#eef2f7;border-radius:999px}
+  .findings-scroll::-webkit-scrollbar-thumb{background:var(--login);border-radius:999px;border:2px solid #eef2f7}
+  .findings-scroll:focus{outline:2px solid rgba(32,32,64,.22);outline-offset:3px}
+  .result-actions{display:flex;gap:12px;align-items:center;margin-top:16px;flex-wrap:wrap}
+  .result-actions .btn{width:auto;min-width:170px}
   .banner{border-radius:var(--radius);padding:16px 18px;margin-bottom:18px;border:1px solid}
   .banner.permitted{background:var(--pass-bg);border-color:#bbf7d0}
   .banner.escalate{background:var(--fail-bg);border-color:#fecaca}
@@ -129,7 +310,7 @@
   .finding .why{margin:9px 0 0;font-size:13px;color:var(--muted)}
   .finding .ev{margin:7px 0 0;font-size:12px;color:var(--faint);border-left:2px solid var(--line);padding-left:9px;word-break:break-word}
 
-  .coaching{background:var(--brand-soft);border:1px solid #c7ddf6;border-radius:10px;padding:14px;margin-top:14px;font-size:13px;white-space:pre-wrap}
+  .coaching{background:var(--brand-soft);border:1px solid #d7d9e1;border-radius:10px;padding:14px;margin-top:14px;font-size:13px;white-space:pre-wrap}
   .coaching b{color:var(--brand-2)}
   .muted{color:var(--muted)} .small{font-size:12px}
   .spinner{display:inline-block;width:15px;height:15px;border:2px solid rgba(255,255,255,.5);border-top-color:#fff;border-radius:50%;animation:spin .7s linear infinite;vertical-align:-2px}
@@ -139,74 +320,309 @@
   footer{max-width:1120px;margin:0 auto;padding:0 28px 40px;color:var(--faint);font-size:12px}
 </style>
 </head>
-<body>
-<header>
-  <div class="logo">SA</div>
-  <div>
-    <h1>SARA 2.0 — Compliance Pre-Vet</h1>
-    <p>AI pre-vet for AFSL advice documents · iComply2</p>
+<body class="login-active">
+<section class="login-page" id="loginPage">
+  <div class="login-card">
+    <img class="login-logo" src="/favicon.png?v=1" alt="iComply2" />
+    <form class="login-form" id="loginForm">
+      <input id="loginEmail" type="email" autocomplete="email" placeholder="Email address" required />
+      <input id="loginPassword" type="password" autocomplete="current-password" placeholder="Password" required />
+      <button class="login-submit" type="submit">Log in</button>
+      <div class="login-divider">or</div>
+      <button class="login-secondary" type="button" id="forgotPassword">Forgot password?</button>
+    </form>
+    <a class="login-support" href="mailto:support@icomply2.com.au">Need an account? Contact support for a free trial</a>
   </div>
-  <div class="privacy">🔒 Files are processed for the check only — not stored</div>
-</header>
+</section>
 
-<main>
-  <p class="intro">
-    Upload your advice document and SARA 2.0 will run an instant compliance pre-vet against the
-    Corporations Act 2001 and the firm's best-interests framework. No client, entity or adviser IDs needed —
-    just pick the check, drop in the file(s), and run.
-  </p>
+<div class="app-shell" id="appShell" hidden>
+  <header class="topbar">
+    <div class="topbar-brand">SARA</div>
+    <div class="top-actions">
+      <button class="icon-action" id="addNewBtn" type="button" title="Add new review">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>
+        <span>Add New</span>
+      </button>
+      <button class="icon-action" id="profileBtn" type="button" title="User profile">
+        <span class="profile-dot">A</span>
+        <span>Me</span>
+      </button>
+      <button class="icon-action" id="logoutBtn" type="button" title="Log out">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><path d="M16 17l5-5-5-5"/><path d="M21 12H9"/></svg>
+        <span>Sign Out</span>
+      </button>
+    </div>
+  </header>
 
-  <div class="roles" id="roles"></div>
+  <div class="app-layout">
+    <aside class="sidebar">
+      <div class="sidebar-avatar">A</div>
+      <nav class="side-nav" aria-label="Main navigation">
+        <button class="side-item active" id="reviewsNav" type="button">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="4" width="18" height="17" rx="2"/><path d="M8 2v4M16 2v4M3 10h18"/></svg>
+          <span>Reviews</span>
+        </button>
+        <button class="side-item" id="observationsNav" type="button">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6h16M4 12h16M4 18h16"/><path d="M8 4v16"/></svg>
+          <span>Observations</span>
+        </button>
+      </nav>
+    </aside>
 
-  <div class="grid">
-    <!-- LEFT: intake -->
-    <div>
-      <div class="card" id="roaOptionsCard" style="display:none">
-        <h2>Record of Advice options</h2>
-        <p class="sub">One input feeds the s946B reliance test (RA-01).</p>
-        <label class="check"><input type="checkbox" id="classified" checked />
-          <span>This document is <b>further advice</b> (a Record of Advice that relies on an earlier SOA).
-            Untick if you're not sure.</span></label>
-      </div>
-
-      <div class="card">
-        <h2>Documents</h2>
-        <p class="sub">Drag &amp; drop or click to browse. SARA auto-tags each file by its name — correct the
-          type if needed. Word, PDF and text files accepted.</p>
-        <div class="drop" id="drop">
-          <b>Drop files here</b> or click to browse<br/>
-          <span class="small">Tip: name files like <code>DocType_Date</code> for the best auto-tagging</span>
-          <input type="file" id="filein" multiple hidden
-                 accept=".pdf,.docx,.doc,.txt" />
+    <main class="dashboard-main">
+      <section class="view" id="reviewsView">
+        <div class="section-title">Client Reviews</div>
+        <div class="review-toolbar">
+          <button class="toolbar-btn" id="createReviewBtn" type="button">Create Review</button>
+          <input id="reviewSearch" type="search" placeholder="Search client..." />
+          <select id="reviewStatusFilter"><option value="">Filter by status</option></select>
+          <select id="reviewAdviserFilter"><option value="">Filter by adviser name</option></select>
+          <select id="reviewPracticeFilter"><option value="">Filter by practice name</option></select>
         </div>
-        <div class="files" id="filelist"></div>
-      </div>
+        <table class="review-table" aria-label="Client reviews">
+          <thead>
+            <tr>
+              <th>Created Date</th>
+              <th>Created By</th>
+              <th>Review Type</th>
+              <th>Client Name</th>
+              <th>Adviser Name</th>
+              <th>Status</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody id="reviewsTableBody"></tbody>
+        </table>
+        <div class="reviews-pagination">
+          <div id="reviewsPageSummary">Showing 0 reviews</div>
+          <div class="pager-controls">
+            <label>
+              Rows
+              <select class="page-size" id="reviewsPageSize">
+                <option value="5">5</option>
+                <option value="10" selected>10</option>
+                <option value="25">25</option>
+              </select>
+            </label>
+            <button class="pager-btn" id="reviewsPrevPage" type="button">Prev</button>
+            <span id="reviewsPageInfo">Page 1 of 1</span>
+            <button class="pager-btn" id="reviewsNextPage" type="button">Next</button>
+          </div>
+        </div>
+      </section>
 
-      <button class="btn" id="run">Run pre-vet</button>
-    </div>
+      <section class="view" id="observationsView" hidden>
+        <div class="section-title">Observations</div>
+        <div class="review-toolbar">
+          <button class="toolbar-btn" id="refreshObservationsBtn" type="button">Refresh</button>
+          <input id="observationSearch" type="search" placeholder="Search observation..." />
+          <select id="observationStatusFilter"><option value="">Filter by status</option></select>
+          <select id="observationAdviserFilter"><option value="">Filter by adviser name</option></select>
+          <select id="observationPracticeFilter"><option value="">Filter by practice name</option></select>
+        </div>
+        <table class="review-table" aria-label="Observations">
+          <thead>
+            <tr>
+              <th>Created Date</th>
+              <th>Created By</th>
+              <th>Client Name</th>
+              <th>Adviser Name</th>
+              <th>Observation</th>
+              <th>Reference</th>
+              <th>Status</th>
+            </tr>
+          </thead>
+          <tbody id="observationsTableBody"></tbody>
+        </table>
+        <div class="reviews-pagination">
+          <div id="observationsPageSummary">Showing 0 observations</div>
+          <div class="pager-controls">
+            <label>
+              Rows
+              <select class="page-size" id="observationsPageSize">
+                <option value="5">5</option>
+                <option value="10" selected>10</option>
+                <option value="25">25</option>
+              </select>
+            </label>
+            <button class="pager-btn" id="observationsPrevPage" type="button">Prev</button>
+            <span id="observationsPageInfo">Page 1 of 1</span>
+            <button class="pager-btn" id="observationsNextPage" type="button">Next</button>
+          </div>
+        </div>
+      </section>
 
-    <!-- RIGHT: checklist + results -->
-    <div>
-      <div class="card">
-        <h2>What to upload</h2>
-        <p class="sub" id="checkSub">Coverage for the selected check.</p>
-        <ul class="checklist" id="checklist"></ul>
-      </div>
+      <section class="view" id="uploadView" hidden>
+        <p class="intro">
+          Select or create the client first, then upload the advice document and run the compliance pre-vet.
+        </p>
 
-      <div class="card" id="results">
-        <h2>Pre-vet result</h2>
-        <div id="resultBody"></div>
-        <button class="btn" id="exportWord" style="margin-top:14px">⬇ Export to Word</button>
-        <button class="btn ghost" id="reset" style="margin-top:14px">Run another check</button>
-      </div>
+        <div class="card wizard-card" id="clientStep">
+          <div class="wizard-step-label">Step 1</div>
+          <h2>Client</h2>
+          <div class="client-form">
+            <div class="client-field">
+              <label for="clientSearchInput">Search client</label>
+              <input id="clientSearchInput" type="search" placeholder="Search client" />
+            </div>
+            <label class="check"><input type="checkbox" id="createNewClientToggle" />
+              <span>Create New Client</span></label>
+            <div class="client-results" id="clientSearchResults"></div>
+
+            <div id="newClientFields" hidden>
+              <div class="client-form-grid">
+                <div class="client-field">
+                  <label for="newClientTitle">Title</label>
+                  <select id="newClientTitle">
+                    <option value="">Choose an option...</option>
+                    <option>Mr</option><option>Mrs</option><option>Ms</option><option>Miss</option><option>Dr</option>
+                  </select>
+                </div>
+                <div></div>
+                <div class="client-field">
+                  <label for="newClientFirstName">First Name</label>
+                  <input id="newClientFirstName" type="text" placeholder="Enter first name" />
+                </div>
+                <div class="client-field">
+                  <label for="newClientLastName">Last Name</label>
+                  <input id="newClientLastName" type="text" placeholder="Enter last name" />
+                </div>
+                <div class="client-field">
+                  <label for="newClientAdviser">Adviser Name</label>
+                  <select id="newClientAdviser"><option value="">Choose an option...</option></select>
+                </div>
+                <div class="client-field">
+                  <label for="newClientCategory">Client Category</label>
+                  <select id="newClientCategory">
+                    <option value="">Choose an option...</option>
+                    <option>Individual</option><option>Joint</option><option>SMSF</option><option>Company</option><option>Trust</option>
+                  </select>
+                </div>
+              </div>
+            </div>
+            <button class="toolbar-btn" id="clientStepNext" type="button">Next</button>
+          </div>
+        </div>
+
+        <div class="upload-step" id="documentStep" hidden>
+        <div class="selected-client-banner" id="selectedClientBanner"></div>
+        <div class="roles" id="roles"></div>
+
+        <div class="grid">
+          <div>
+            <div class="card" id="roaOptionsCard" style="display:none">
+              <h2>Record of Advice options</h2>
+              <p class="sub">One input feeds the s946B reliance test (RA-01).</p>
+              <label class="check"><input type="checkbox" id="classified" checked />
+                <span>This document is <b>further advice</b> (a Record of Advice that relies on an earlier SOA).
+                  Untick if you're not sure.</span></label>
+            </div>
+
+            <div class="card">
+              <h2>Documents</h2>
+              <p class="sub">Drag &amp; drop or click to browse. SARA auto-tags each file by its name — correct the
+                type if needed. Word, PDF and text files accepted.</p>
+              <div class="drop" id="drop">
+                <b>Drop files here</b> or click to browse<br/>
+                <span class="small">Tip: name files like <code>DocType_Date</code> for the best auto-tagging</span>
+                <input type="file" id="filein" multiple hidden
+                       accept=".pdf,.docx,.txt" />
+              </div>
+              <div class="files" id="filelist"></div>
+            </div>
+
+            <button class="btn" id="run">Run pre-vet</button>
+          </div>
+
+          <div>
+            <div class="card">
+              <h2>What to upload</h2>
+              <p class="sub" id="checkSub">Coverage for the selected check.</p>
+              <ul class="checklist" id="checklist"></ul>
+            </div>
+
+          </div>
+        </div>
+
+        <footer>
+          SARA 2.0 is an AI compliance assistant and a first-pass aid only. It does not replace adviser judgement
+          or compliance sign-off. Results should be reviewed before any advice is released to a client.
+        </footer>
+        </div>
+      </section>
+
+      <section class="view" id="resultView" hidden>
+        <div class="section-title">Pre-vet Result</div>
+        <div class="card result-view-card" id="results">
+          <div id="resultBody"></div>
+          <div class="result-actions">
+            <button class="btn" id="exportWord">Export to Word</button>
+            <button class="btn ghost" id="reset">Run another check</button>
+          </div>
+        </div>
+      </section>
+    </main>
+  </div>
+</div>
+
+<div class="modal-backdrop" id="deleteConfirmModal" hidden>
+  <div class="modal" role="dialog" aria-modal="true" aria-labelledby="deleteConfirmTitle">
+    <h3 id="deleteConfirmTitle">Delete review?</h3>
+    <p id="deleteConfirmText">This review will be permanently removed.</p>
+    <div class="modal-actions">
+      <button id="cancelDeleteReview" type="button">Cancel</button>
+      <button class="danger" id="confirmDeleteReview" type="button">Delete</button>
     </div>
   </div>
-</main>
+</div>
 
-<footer>
-  SARA 2.0 is an AI compliance assistant and a first-pass aid only — it does not replace adviser judgement
-  or compliance sign-off. Results should be reviewed before any advice is released to a client.
-</footer>
+<div class="modal-backdrop" id="profileModal" hidden>
+  <div class="modal profile-modal" role="dialog" aria-modal="true" aria-labelledby="profileModalTitle">
+    <h3 id="profileModalTitle">User Profile</h3>
+    <div id="profileModalBody">
+      <p>Loading profile...</p>
+    </div>
+    <div class="modal-actions">
+      <button id="closeProfileModal" type="button">Close</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-backdrop" id="editReviewModal" hidden>
+  <div class="modal" role="dialog" aria-modal="true" aria-labelledby="editReviewTitle">
+    <h3 id="editReviewTitle">Edit Review</h3>
+    <p class="edit-review-note">Update the review details below.</p>
+    <form class="edit-review-form" id="editReviewForm">
+      <div class="edit-review-grid">
+        <div class="edit-review-field">
+          <label for="editClientName">Client name</label>
+          <input id="editClientName" name="clientName" type="text" required />
+        </div>
+        <div class="edit-review-field">
+          <label for="editAdviserName">Adviser name</label>
+          <input id="editAdviserName" name="adviserName" type="text" />
+        </div>
+        <div class="edit-review-field">
+          <label for="editReviewStatus">Review status</label>
+          <select id="editReviewStatus" name="reviewStatus">
+            <option>Not started</option>
+            <option>Requires Review</option>
+            <option>Done</option>
+            <option>Aborted</option>
+          </select>
+        </div>
+        <div class="edit-review-field">
+          <label for="editPracticeName">Practice name</label>
+          <input id="editPracticeName" name="practiceName" type="text" readonly />
+        </div>
+      </div>
+      <div class="modal-actions">
+        <button id="cancelEditReview" type="button">Cancel</button>
+        <button class="toolbar-btn" id="saveEditReview" type="submit">Save</button>
+      </div>
+    </form>
+  </div>
+</div>
 
 <div class="toast" id="toast"></div>
 
@@ -232,6 +648,14 @@ const CONFIG = {
   FUNCTION_KEY: ""              // e.g. "abc123..."  (avoid embedding in a public page)
 };
 const EP_PATH = { soa:"/api/soa/prevet", roa:"/api/roa/prevet" };
+const AUTH_KEY = "saraLoggedIn";
+const AUTH_TOKEN_KEY = "saraJwtToken";
+const AUTH_EMAIL_KEY = "saraLoginEmail";
+const AUTH_PROFILE_KEY = "saraUserProfile";
+const DASHBOARD_PATH = "/dashboard";
+const UPLOAD_PATH = "/upload";
+const RESULT_PATH_PREFIX = "/result/";
+const RESULT_CACHE_PREFIX = "saraReviewResult:";
 
 if (window.pdfjsLib) {
   pdfjsLib.GlobalWorkerOptions.workerSrc =
@@ -287,9 +711,1307 @@ const ROLES = {
   }
 };
 
+const COMPLIANCE_PROMPTS = {
+  soa: [
+    "OBJ Did the adviser identify the client's objectives? (s961B(2)(a))",
+    "FINSIT Did the adviser identify the financial situation and needs? (s961B(2)(a))",
+    "RISK Has the adviser identified the client's risk profile? (s961B(2))",
+    "SCOPE Did the adviser identify the subject matter and scope of advice, incl. limitations? (s961B(2)(b))",
+    "PRODUCT Does the SOA explain how the recommended product meets the client's objective? (s961G)",
+    "PROPERTY Is any direct property, a non-financial product, recommended? (Pass / N/A if none)",
+    "ALLOC Does the recommended asset allocation meet the risk profile? (s961B / s961G)",
+    "JUDGE Are the adviser's judgements based on the client's relevant circumstances? (s961B(2)(f))",
+    "NEEDS Has a needs analysis been completed, incl. insurance where in scope? (best interests / s961G)",
+    "FEES Are fees payable and remuneration/commissions adequately disclosed? (s947B / conflicted remuneration)",
+    "PDS Is a Product Disclosure Statement provided/referenced for recommended products?",
+    "OFA Is an ongoing/annual fee agreement and consent to deduct fees present? (s962)",
+    "CREDIT Does the SOA avoid unlicensed credit advice? (NCCP Act 2009)"
+  ],
+  roa: [
+    "RA-01 Is this further advice suited to an RoA?",
+    "RA-02 Can the prior SOA it relies on be located and is it valid?",
+    "RA-03 Have the client's relevant personal circumstances changed significantly since the SOA?",
+    "RA-04 Does the further advice stay within the basis and product scope of the SOA?",
+    "RA-05 Does the RoA record the required content and is it retained?"
+  ]
+};
+
 // ---------- State ----------
 let role = "soa";
 let files = []; // {id,file,type,text}
+const FALLBACK_CLIENT_REVIEWS = [
+  {date:"30/06/2026", createdBy:"Juvegilda Ycot", reviewType:"SOA Pre-Vet", clientName:"Test Compliance", adviserName:"", status:"Not started"},
+  {date:"29/06/2026", createdBy:"John Guthrie", reviewType:"SOA Pre-Vet", clientName:"Chandrashekar, Ashwina", adviserName:"John Guthrie", status:"Done"},
+  {date:"29/06/2026", createdBy:"Juvegilda Ycot", reviewType:"SOA Pre-Vet", clientName:"Rosalie Earl", adviserName:"Georgia Sykes", status:"Not started"},
+  {date:"29/06/2026", createdBy:"Juvegilda Ycot", reviewType:"SOA Pre-Vet", clientName:"Bradd Morrow", adviserName:"Georgia Sykes", status:"Not started"},
+  {date:"29/06/2026", createdBy:"Kylie Abela", reviewType:"SOA Pre-Vet", clientName:"Rosalie Earl", adviserName:"Georgia Sykes", status:"Not started"},
+  {date:"29/06/2026", createdBy:"Kylie Abela", reviewType:"SOA Pre-Vet", clientName:"Bradd Morrow", adviserName:"Georgia Sykes", status:"Not started"},
+  {date:"29/06/2026", createdBy:"Kylie Abela", reviewType:"SOA Pre-Vet", clientName:"Rosalie Earl", adviserName:"Georgia Sykes", status:"Aborted"}
+];
+let clientReviews = sortReviewsNewestFirst(FALLBACK_CLIENT_REVIEWS);
+let reviewsLoaded = false;
+const reviewsPagination = { page: 1, pageSize: 10, filteredCount: 0 };
+const reviewFilters = { search: "", status: "", adviserName: "", practiceName: "" };
+let activeReviewsLicenseeName = "";
+let observations = [];
+let observationsLoaded = false;
+const observationsPagination = { page: 1, pageSize: 10, filteredCount: 0 };
+const observationFilters = { search: "", status: "", adviserName: "", practiceName: "" };
+let activeObservationsLicenseeName = "";
+let selectedReviewClient = null;
+let clientSearchRows = [];
+let adviserOptions = [];
+let activeCreatedReview = null;
+
+function statusClass(status){
+  if (status === "Done") return "done";
+  if (status === "Requires Review") return "requires-review";
+  if (status === "Aborted") return "aborted";
+  return "";
+}
+
+function reviewMatchesFilters(review){
+  const q = reviewFilters.search.trim().toLowerCase();
+  if (q && ![review.clientName, review.adviserName, review.createdBy, review.reviewType, review.practiceName, review.status]
+    .some(v => String(v || "").toLowerCase().includes(q))) {
+    return false;
+  }
+  if (reviewFilters.status && review.status !== reviewFilters.status) return false;
+  if (reviewFilters.adviserName && review.adviserName !== reviewFilters.adviserName) return false;
+  if (reviewFilters.practiceName && review.practiceName !== reviewFilters.practiceName) return false;
+  return true;
+}
+
+function renderReviews(){
+  const body = document.getElementById("reviewsTableBody");
+  const rows = clientReviews.filter(reviewMatchesFilters);
+  reviewsPagination.filteredCount = rows.length;
+  const totalPages = Math.max(1, Math.ceil(rows.length / reviewsPagination.pageSize));
+  if (reviewsPagination.page > totalPages) reviewsPagination.page = totalPages;
+  const start = (reviewsPagination.page - 1) * reviewsPagination.pageSize;
+  const pageRows = rows.slice(start, start + reviewsPagination.pageSize);
+  updateReviewsPagination(rows.length, totalPages, start, pageRows.length);
+  if (!rows.length){
+    body.innerHTML = `<tr><td colspan="7">No reviews found.</td></tr>`;
+    return;
+  }
+  body.innerHTML = pageRows.map(r => `
+    <tr data-review-id="${escapeHtml(r.id)}">
+      <td>${escapeHtml(r.date)}</td>
+      <td>${escapeHtml(r.createdBy)}</td>
+      <td>${escapeHtml(r.reviewType)}</td>
+      <td>${escapeHtml(r.clientName)}</td>
+      <td>${escapeHtml(r.adviserName || "-")}</td>
+      <td>
+        <select class="status-select ${statusClass(r.status)}">
+          <option ${r.status==="Not started"?"selected":""}>Not started</option>
+          <option ${r.status==="Requires Review"?"selected":""}>Requires Review</option>
+          <option ${r.status==="Done"?"selected":""}>Done</option>
+          <option ${r.status==="Aborted"?"selected":""}>Aborted</option>
+        </select>
+      </td>
+      <td>
+        <div class="row-actions">
+          <button type="button" class="review-download" data-review-id="${escapeHtml(r.id)}" title="Download SARA report" ${r.id?"":"disabled"}><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><path d="M7 10l5 5 5-5"/><path d="M12 15V3"/></svg></button>
+          <button type="button" class="review-edit" data-review-id="${escapeHtml(r.id)}" title="Open review" ${r.id?"":"disabled"}><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg></button>
+          <button type="button" class="review-delete" data-review-id="${escapeHtml(r.id)}" title="Delete review" ${r.id?"":"disabled"}><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 6h18"/><path d="M8 6V4h8v2"/><path d="M19 6l-1 14H6L5 6"/></svg></button>
+        </div>
+      </td>
+    </tr>
+  `).join("");
+}
+
+function updateReviewsPagination(totalRows, totalPages, start, pageLength){
+  const summary = document.getElementById("reviewsPageSummary");
+  const pageInfo = document.getElementById("reviewsPageInfo");
+  const prev = document.getElementById("reviewsPrevPage");
+  const next = document.getElementById("reviewsNextPage");
+  if (!totalRows){
+    summary.textContent = "Showing 0 reviews";
+  } else {
+    summary.textContent = `Showing ${start + 1}-${start + pageLength} of ${totalRows} reviews`;
+  }
+  pageInfo.textContent = `Page ${reviewsPagination.page} of ${totalPages}`;
+  prev.disabled = reviewsPagination.page <= 1;
+  next.disabled = reviewsPagination.page >= totalPages;
+}
+
+function uniqueSorted(values){
+  return [...new Set(values.map(v=>String(v || "").trim()).filter(v=>v && v !== "-"))]
+    .sort((a,b)=>a.localeCompare(b));
+}
+
+function setFilterOptions(selectId, placeholder, values, currentValue){
+  const select = document.getElementById(selectId);
+  const sortedValues = uniqueSorted(values);
+  const nextValue = currentValue && sortedValues.includes(currentValue) ? currentValue : "";
+  const options = [`<option value="">${escapeHtml(placeholder)}</option>`]
+    .concat(sortedValues.map(v=>`<option value="${escapeHtml(v)}" ${v===nextValue?"selected":""}>${escapeHtml(v)}</option>`));
+  select.innerHTML = options.join("");
+  select.value = nextValue;
+  return nextValue;
+}
+
+function populateReviewFilters(){
+  reviewFilters.status = setFilterOptions("reviewStatusFilter", "Filter by status", clientReviews.map(r=>r.status), reviewFilters.status);
+  reviewFilters.adviserName = setFilterOptions("reviewAdviserFilter", "Filter by adviser name", clientReviews.map(r=>r.adviserName), reviewFilters.adviserName);
+  reviewFilters.practiceName = setFilterOptions("reviewPracticeFilter", "Filter by practice name", clientReviews.map(r=>r.practiceName), reviewFilters.practiceName);
+}
+
+function sameText(a,b){
+  return String(a || "").trim().toLowerCase() === String(b || "").trim().toLowerCase();
+}
+
+function scopeReviewsToLicensee(rows, licenseeName){
+  const scopedLicensee = String(licenseeName || "").trim();
+  if (!scopedLicensee) return rows;
+  return rows.filter(row => !row.licenseeName || sameText(row.licenseeName, scopedLicensee));
+}
+
+function formatReviewDate(value){
+  if (!value) return "-";
+  const d = new Date(value);
+  if (Number.isNaN(d.getTime())) return String(value).slice(0, 10);
+  return d.toLocaleDateString("en-AU", {day:"2-digit", month:"2-digit", year:"numeric"});
+}
+
+function reviewSortTime(value){
+  if (!value) return 0;
+  if (value instanceof Date) return value.getTime();
+  const raw = String(value).trim();
+  let parsed = Date.parse(raw);
+  if (!Number.isNaN(parsed)) return parsed;
+  const au = raw.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})(?:[,\s]+(.+))?$/);
+  if (au){
+    parsed = Date.parse(`${au[3]}-${au[2].padStart(2,"0")}-${au[1].padStart(2,"0")} ${au[4] || ""}`);
+    if (!Number.isNaN(parsed)) return parsed;
+  }
+  return 0;
+}
+
+function sortReviewsNewestFirst(rows){
+  return rows.slice().sort((a,b)=>{
+    const aTime = a.createdSortTime ?? reviewSortTime(a.createdDateTime || a.createdDate || a.date);
+    const bTime = b.createdSortTime ?? reviewSortTime(b.createdDateTime || b.createdDate || b.date);
+    return bTime - aTime;
+  });
+}
+
+function displayReviewStatus(value){
+  const raw = String(value || "Not started").trim();
+  const compact = raw.replace(/[_-]/g, " ").toLowerCase();
+  if (compact === "done" || compact === "completed" || compact === "complete") return "Done";
+  if (compact === "requires review" || compact === "requiresreview" || compact === "review required") return "Requires Review";
+  if (compact === "aborted" || compact === "cancelled" || compact === "canceled") return "Aborted";
+  if (compact === "not started" || compact === "notstarted") return "Not started";
+  return raw || "Not started";
+}
+
+function personName(value){
+  if (!value) return "";
+  if (typeof value === "string") return value;
+  return value.name || value.fullName || value.email || "";
+}
+
+function normalizeReview(item){
+  const createdDate = item.createdDateTime || item.createdDate || item.date;
+  return {
+    id: item.id || item.Id || "",
+    raw: item,
+    date: formatReviewDate(createdDate),
+    createdSortTime: reviewSortTime(createdDate),
+    createdBy:
+      item.createdByUserName ||
+      item.createdByUsername ||
+      item.createdByName ||
+      item.creatorName ||
+      personName(item.creator) ||
+      personName(item.createdByUser) ||
+      item.createdBy ||
+      "-",
+    reviewType: item.reviewType || "SARA Review",
+    clientName: item.clientName || personName(item.client) || "-",
+    adviserName: personName(item.adviser) || item.adviserName || "-",
+    practiceName: item.practiceName || personName(item.practice) || "-",
+    licenseeName: item.licenseeName || item.licenceeName || personName(item.licensee) || personName(item.licencee) || "",
+    reportFile: item.reportFile || item.ReportFile || "",
+    status: displayReviewStatus(item.reviewStatus || item.status),
+  };
+}
+
+function nestedReview(item){
+  return item.saraReview || item.SaraReview || item.review || item.Review || {};
+}
+
+function normalizeObservation(item){
+  const review = nestedReview(item);
+  const createdDate = item.createdDateTime || item.createdDate || item.date || item.modifiedDate || review.createdDateTime || review.createdDate;
+  const observationText =
+    item.observation ||
+    item.observationText ||
+    item.auditQuestion ||
+    item.question ||
+    item.content ||
+    item.summary ||
+    item.message ||
+    item.title ||
+    "-";
+  const reference =
+    item.regulatoryReference ||
+    item.promptRegRef ||
+    item.regRef ||
+    item.reference ||
+    item.reviewStatusReportRegulatoryReference ||
+    "-";
+  return {
+    id: item.id || item.Id || item.observationId || item.ObservationId || "",
+    raw: item,
+    date: formatReviewDate(createdDate),
+    createdSortTime: reviewSortTime(createdDate),
+    createdBy:
+      item.createdByUserName ||
+      item.createdByUsername ||
+      item.createdByName ||
+      item.creatorName ||
+      personName(item.creator) ||
+      personName(item.createdByUser) ||
+      item.createdBy ||
+      review.createdBy ||
+      "-",
+    clientName: item.clientName || personName(item.client) || review.clientName || personName(review.client) || "-",
+    adviserName:
+      personName(item.adviser) ||
+      item.adviserName ||
+      personName(review.adviser) ||
+      review.adviserName ||
+      "-",
+    practiceName: item.practiceName || personName(item.practice) || review.practiceName || personName(review.practice) || "-",
+    licenseeName:
+      item.licenseeName ||
+      item.licenceeName ||
+      personName(item.licensee) ||
+      personName(item.licencee) ||
+      review.licenseeName ||
+      review.licenceeName ||
+      personName(review.licensee) ||
+      personName(review.licencee) ||
+      "",
+    observation: observationText,
+    reference,
+    status: displayReviewStatus(item.status || item.observationStatus || item.reviewStatus || item.passfail || "Not started"),
+  };
+}
+
+function observationMatchesFilters(observation){
+  const q = observationFilters.search.trim().toLowerCase();
+  if (q && ![
+    observation.clientName,
+    observation.adviserName,
+    observation.createdBy,
+    observation.practiceName,
+    observation.status,
+    observation.reference,
+    observation.observation
+  ].some(v => String(v || "").toLowerCase().includes(q))) {
+    return false;
+  }
+  if (observationFilters.status && observation.status !== observationFilters.status) return false;
+  if (observationFilters.adviserName && observation.adviserName !== observationFilters.adviserName) return false;
+  if (observationFilters.practiceName && observation.practiceName !== observationFilters.practiceName) return false;
+  return true;
+}
+
+function renderObservations(){
+  const body = document.getElementById("observationsTableBody");
+  const rows = observations.filter(observationMatchesFilters);
+  observationsPagination.filteredCount = rows.length;
+  const totalPages = Math.max(1, Math.ceil(rows.length / observationsPagination.pageSize));
+  if (observationsPagination.page > totalPages) observationsPagination.page = totalPages;
+  const start = (observationsPagination.page - 1) * observationsPagination.pageSize;
+  const pageRows = rows.slice(start, start + observationsPagination.pageSize);
+  updateObservationsPagination(rows.length, totalPages, start, pageRows.length);
+  if (!rows.length){
+    body.innerHTML = `<tr><td colspan="7">No observations found.</td></tr>`;
+    return;
+  }
+  body.innerHTML = pageRows.map(o => `
+    <tr data-observation-id="${escapeHtml(o.id)}">
+      <td>${escapeHtml(o.date)}</td>
+      <td>${escapeHtml(o.createdBy)}</td>
+      <td>${escapeHtml(o.clientName)}</td>
+      <td>${escapeHtml(o.adviserName || "-")}</td>
+      <td>${escapeHtml(o.observation)}</td>
+      <td>${escapeHtml(o.reference)}</td>
+      <td><span class="chip ${escapeHtml(o.status)}">${escapeHtml(o.status)}</span></td>
+    </tr>
+  `).join("");
+}
+
+function updateObservationsPagination(totalRows, totalPages, start, pageLength){
+  const summary = document.getElementById("observationsPageSummary");
+  const pageInfo = document.getElementById("observationsPageInfo");
+  const prev = document.getElementById("observationsPrevPage");
+  const next = document.getElementById("observationsNextPage");
+  if (!totalRows){
+    summary.textContent = "Showing 0 observations";
+  } else {
+    summary.textContent = `Showing ${start + 1}-${start + pageLength} of ${totalRows} observations`;
+  }
+  pageInfo.textContent = `Page ${observationsPagination.page} of ${totalPages}`;
+  prev.disabled = observationsPagination.page <= 1;
+  next.disabled = observationsPagination.page >= totalPages;
+}
+
+function populateObservationFilters(){
+  observationFilters.status = setFilterOptions("observationStatusFilter", "Filter by status", observations.map(o=>o.status), observationFilters.status);
+  observationFilters.adviserName = setFilterOptions("observationAdviserFilter", "Filter by adviser name", observations.map(o=>o.adviserName), observationFilters.adviserName);
+  observationFilters.practiceName = setFilterOptions("observationPracticeFilter", "Filter by practice name", observations.map(o=>o.practiceName), observationFilters.practiceName);
+}
+
+function authHeaders(){
+  const token = sessionStorage.getItem(AUTH_TOKEN_KEY);
+  return token ? { Authorization: `Bearer ${token}` } : {};
+}
+
+function decodeJwtPayload(token){
+  try{
+    const payload = token.split(".")[1];
+    const padded = payload.replace(/-/g, "+").replace(/_/g, "/").padEnd(Math.ceil(payload.length / 4) * 4, "=");
+    return JSON.parse(atob(padded));
+  }catch(_){
+    return {};
+  }
+}
+
+function firstClaim(claims, names){
+  for (const name of names){
+    if (claims[name]) return String(claims[name]);
+  }
+  return "";
+}
+
+function profileFromToken(token, emailFallback=""){
+  const claims = decodeJwtPayload(token);
+  const email = firstClaim(claims, [
+    "email",
+    "Email",
+    "preferred_username",
+    "unique_name",
+    "http://schemas.xmlsoap.org/ws/2005/05/identity/claims/emailaddress"
+  ]) || emailFallback;
+  return {
+    id: firstClaim(claims, [
+      "sub",
+      "userId",
+      "UserId",
+      "userID",
+      "UserID",
+      "id",
+      "nameid",
+      "oid",
+      "http://schemas.xmlsoap.org/ws/2005/05/identity/claims/nameidentifier"
+    ]),
+    name: firstClaim(claims, [
+      "name",
+      "Name",
+      "given_name",
+      "http://schemas.xmlsoap.org/ws/2005/05/identity/claims/name"
+    ]) || email,
+    email,
+    licenseeName: firstClaim(claims, ["licenseeName", "licenceeName", "LicenseeName", "LicenceeName"]),
+    practiceName: firstClaim(claims, ["practiceName", "PracticeName"])
+  };
+}
+
+function currentUserProfile(){
+  try{
+    return JSON.parse(sessionStorage.getItem(AUTH_PROFILE_KEY) || "{}");
+  }catch(_){
+    return {};
+  }
+}
+
+function objectName(value){
+  if (!value) return "";
+  if (typeof value === "string") return value;
+  return value.name || value.Name || value.email || value.Email || "";
+}
+
+function normalizeUserProfile(user){
+  user = user || {};
+  const address = user.address || user.Address || {};
+  const practice = user.practice || user.Practice || {};
+  const licensee = user.licensee || user.Licensee || {};
+  const complianceManager = user.complianceManager || user.ComplianceManager || {};
+  return {
+    ...currentUserProfile(),
+    raw: user,
+    id: user.id || user.Id || currentUserProfile().id || "",
+    name: user.name || user.Name || currentUserProfile().name || "",
+    email: user.email || user.Email || currentUserProfile().email || "",
+    phoneNumber: user.phoneNumber || user.PhoneNumber || "",
+    officeNumber: user.officeNumber || user.OfficeNumber || "",
+    dateOfBirth: user.dateOfBirth || user.DateOfBirth || "",
+    userRole: user.userRole || user.UserRole || "",
+    asicNumber: user.asicNumber || user.AsicNumber || "",
+    abn: user.abn || user.Abn || user.ABN || "",
+    acn: user.acn || user.Acn || user.ACN || "",
+    occupation: user.occupation || user.Occupation || "",
+    authorizedRepNumber: user.authorizedRepNumber || user.AuthorizedRepNumber || "",
+    businessName: user.businessName || user.BusinessName || "",
+    userStatus: user.userStatus || user.UserStatus || "",
+    appAccess: user.appAccess || user.AppAccess || "",
+    website: user.website || user.Website || "",
+    practiceName: objectName(practice) || currentUserProfile().practiceName || "",
+    licenseeName: objectName(licensee) || currentUserProfile().licenseeName || "",
+    complianceManagerName: objectName(complianceManager),
+    address: {
+      street: address.street || address.Street || "",
+      suburb: address.suburb || address.Suburb || address.city || address.City || "",
+      state: address.state || address.State || address.region || address.Region || "",
+      postCode: address.postCode || address.PostCode || address.postalCode || address.PostalCode || "",
+      country: address.country || address.Country || "",
+    }
+  };
+}
+
+function displayPersonName(person){
+  if (!person) return "";
+  if (typeof person === "string") return person;
+  return person.name || person.Name || [person.firstName, person.lastName].filter(Boolean).join(" ") || "";
+}
+
+function normalizeAdviser(item){
+  item = item || {};
+  return {
+    id: item.id || item.Id || "",
+    name: item.name || item.Name || item.fullName || item.FullName || item.email || item.Email || "",
+    email: item.email || item.Email || "",
+    raw: item
+  };
+}
+
+function normalizeClientProfile(item){
+  item = item || {};
+  const client = item.client || item.Client || {};
+  const adviser = normalizeAdviser(item.adviser || item.Adviser || {});
+  const clientName = displayPersonName(client) || item.clientName || item.ClientName || item.name || item.Name || "";
+  return {
+    id: item.id || item.Id || item.clientProfileId || item.ClientProfileId || "",
+    clientName,
+    clientCategory: client.category || client.Category || item.clientCategory || item.ClientCategory || "",
+    adviserId: adviser.id,
+    adviserName: adviser.name,
+    adviserEmail: adviser.email,
+    practiceName: item.practice || item.Practice || item.practiceName || item.PracticeName || currentUserProfile().practiceName || "",
+    licenseeName: item.licensee || item.Licensee || item.licenseeName || item.LicenseeName || currentUserProfile().licenseeName || "",
+    raw: item
+  };
+}
+
+function selectedClientMeta(client){
+  return [client.adviserName, client.practiceName, client.licenseeName].filter(Boolean).join(" · ");
+}
+
+function renderClientSearchResults(){
+  const target = document.getElementById("clientSearchResults");
+  if (document.getElementById("createNewClientToggle").checked){
+    target.innerHTML = "";
+    return;
+  }
+  if (!clientSearchRows.length){
+    target.innerHTML = `<div class="empty-panel">Search for a client to continue.</div>`;
+    return;
+  }
+  target.innerHTML = clientSearchRows.map(client=>`
+    <button type="button" class="client-result ${selectedReviewClient && selectedReviewClient.id === client.id ? "selected" : ""}" data-client-id="${escapeHtml(client.id)}">
+      <strong>${escapeHtml(client.clientName || "Unnamed client")}</strong>
+      <span class="client-meta">${escapeHtml(selectedClientMeta(client) || "No adviser details returned")}</span>
+    </button>
+  `).join("");
+}
+
+function renderSelectedClient(){
+  const banner = document.getElementById("selectedClientBanner");
+  if (!selectedReviewClient){
+    banner.innerHTML = "";
+    return;
+  }
+  banner.innerHTML = `
+    <div>
+      <strong>${escapeHtml(selectedReviewClient.clientName || "Selected client")}</strong>
+      <span>${escapeHtml(selectedClientMeta(selectedReviewClient))}</span>
+    </div>
+    <button class="pager-btn" id="changeClientBtn" type="button">Change</button>
+  `;
+  document.getElementById("changeClientBtn").onclick = ()=>{
+    document.getElementById("documentStep").hidden = true;
+    document.getElementById("clientStep").hidden = false;
+  };
+}
+
+async function loadAdvisers(){
+  const profile = await ensureUserProfileForReview();
+  const query = new URLSearchParams();
+  if (profile.licenseeName) query.set("licenseeName", profile.licenseeName);
+  if (profile.practiceName) query.set("practiceName", profile.practiceName);
+  const res = await fetch(`/api/sara/advisers?${query.toString()}`, {headers: authHeaders()});
+  const payload = await res.json().catch(()=>({}));
+  if (!res.ok || payload.status === false || payload.Status === false){
+    throw new Error(apiErrorMessage(payload, "Could not load advisers."));
+  }
+  const rows = Array.isArray(payload) ? payload : (payload.data || payload.Data || []);
+  adviserOptions = rows.map(normalizeAdviser).filter(a=>a.name);
+  const select = document.getElementById("newClientAdviser");
+  select.innerHTML = `<option value="">Choose an option...</option>` +
+    adviserOptions.map(a=>`<option value="${escapeHtml(a.id || a.email || a.name)}">${escapeHtml(a.name)}</option>`).join("");
+}
+
+async function searchClientProfiles(){
+  const profile = await ensureUserProfileForReview();
+  const term = document.getElementById("clientSearchInput").value.trim();
+  const payload = {
+    continuationToken: "",
+    pageSize: 10,
+    clientName: term,
+    practiceName: profile.practiceName || "",
+    licenseeName: profile.licenseeName || ""
+  };
+  const res = await fetch("/api/sara/client-profiles/search", {
+    method: "POST",
+    headers: {...authHeaders(), "Content-Type":"application/json"},
+    body: JSON.stringify(payload)
+  });
+  const result = await res.json().catch(()=>({}));
+  if (!res.ok || result.status === false || result.Status === false){
+    throw new Error(apiErrorMessage(result, "Could not search clients."));
+  }
+  const data = result.data || result.Data || {};
+  const rows = Array.isArray(data) ? data : (data.items || data.Items || []);
+  clientSearchRows = rows.map(normalizeClientProfile).filter(c=>c.clientName);
+  renderClientSearchResults();
+}
+
+async function searchClientProfilesByName(clientName){
+  const profile = await ensureUserProfileForReview();
+  const payload = {
+    continuationToken: "",
+    pageSize: 10,
+    clientName,
+    practiceName: profile.practiceName || "",
+    licenseeName: profile.licenseeName || ""
+  };
+  const res = await fetch("/api/sara/client-profiles/search", {
+    method: "POST",
+    headers: {...authHeaders(), "Content-Type":"application/json"},
+    body: JSON.stringify(payload)
+  });
+  const result = await res.json().catch(()=>({}));
+  if (!res.ok || result.status === false || result.Status === false){
+    throw new Error(apiErrorMessage(result, "Could not verify the created client."));
+  }
+  const data = result.data || result.Data || {};
+  const rows = Array.isArray(data) ? data : (data.items || data.Items || []);
+  return rows.map(normalizeClientProfile).filter(c=>c.clientName);
+}
+
+function selectedAdviserFromForm(){
+  const value = document.getElementById("newClientAdviser").value;
+  return adviserOptions.find(a=>String(a.id || a.email || a.name) === String(value)) || {};
+}
+
+async function createClientProfileFromForm(){
+  const profile = await ensureUserProfileForReview();
+  const firstName = document.getElementById("newClientFirstName").value.trim();
+  const lastName = document.getElementById("newClientLastName").value.trim();
+  if (!firstName || !lastName) throw new Error("Enter the client's first and last name.");
+  const adviser = selectedAdviserFromForm();
+  if (!adviser.name) throw new Error("Choose an adviser for this client.");
+  const clientName = `${firstName} ${lastName}`.trim();
+  const now = new Date().toISOString();
+  const profileId = window.crypto && window.crypto.randomUUID ? window.crypto.randomUUID() : `${Date.now()}-${Math.random().toString(16).slice(2)}`;
+  const sharedWith = profile.id ? [profile.id] : [];
+  const payload = {
+    id: profileId,
+    licensee: profile.licenseeName || "",
+    practice: profile.practiceName || "",
+    createdDate: now,
+    modifiedDate: now,
+    shareWith: sharedWith,
+    client: {
+      id: profileId,
+      title: document.getElementById("newClientTitle").value,
+      name: clientName,
+      category: document.getElementById("newClientCategory").value || "Individual",
+      accountStatus: "Active",
+      clientStatus: "Active",
+      sharedWith: sharedWith
+    },
+    adviser: {
+      id: adviser.id || "",
+      entity: adviser.raw && (adviser.raw.entity || adviser.raw.Entity) || "",
+      name: adviser.name || "",
+      email: adviser.email || ""
+    }
+  };
+  const res = await fetch("/api/sara/client-profiles", {
+    method: "POST",
+    headers: {...authHeaders(), "Content-Type":"application/json"},
+    body: JSON.stringify(payload)
+  });
+  const result = await res.json().catch(()=>({}));
+  if (!res.ok || result.status === false || result.Status === false){
+    throw new Error(apiErrorMessage(result, "Could not create client."));
+  }
+  const created = normalizeClientProfile(result.data || result.Data || payload);
+  selectedReviewClient = {
+    ...created,
+    id: created.id || profileId,
+    clientName: created.clientName || clientName,
+    adviserId: created.adviserId || adviser.id || "",
+    adviserName: created.adviserName || adviser.name || "",
+    adviserEmail: created.adviserEmail || adviser.email || "",
+    practiceName: created.practiceName || profile.practiceName || "",
+    licenseeName: created.licenseeName || profile.licenseeName || ""
+  };
+  const verifiedRows = await searchClientProfilesByName(clientName);
+  const verified = verifiedRows.find(c =>
+    c.id === selectedReviewClient.id ||
+    c.clientName.toLowerCase() === clientName.toLowerCase()
+  );
+  if (!verified){
+    throw new Error("The client API accepted the request, but the client was not returned in search. The review has not been started.");
+  }
+  selectedReviewClient = {...selectedReviewClient, ...verified};
+  return selectedReviewClient;
+}
+
+function showDocumentStep(){
+  if (!selectedReviewClient){
+    toast("Choose or create a client first.");
+    return;
+  }
+  document.getElementById("clientStep").hidden = true;
+  document.getElementById("documentStep").hidden = false;
+  renderSelectedClient();
+}
+
+async function startNewReview(options={}){
+  const shouldUpdatePath = !(options && options.skipPathUpdate);
+  if (shouldUpdatePath) setAppPath(UPLOAD_PATH);
+  selectedReviewClient = null;
+  clientSearchRows = [];
+  activeCreatedReview = null;
+  document.getElementById("clientStep").hidden = false;
+  document.getElementById("documentStep").hidden = true;
+  document.getElementById("createNewClientToggle").checked = false;
+  document.getElementById("newClientFields").hidden = true;
+  document.getElementById("clientSearchInput").value = "";
+  renderClientSearchResults();
+  setActiveView("upload");
+  try{
+    await loadAdvisers();
+  }catch(err){
+    console.warn("adviser load failed", err);
+    toast(err.message || "Could not load advisers.");
+  }
+}
+
+let clientSearchTimer;
+
+function profileField(label, value){
+  return `<div class="profile-field"><label>${escapeHtml(label)}</label><div class="profile-value">${escapeHtml(value || "-")}</div></div>`;
+}
+
+function profileSection(title, fields){
+  return `<div class="profile-section">${escapeHtml(title)}</div><div class="profile-grid">${fields.join("")}</div>`;
+}
+
+function renderProfileModal(profile, loading=false){
+  const body = document.getElementById("profileModalBody");
+  if (loading){
+    body.innerHTML = "<p>Loading profile...</p>";
+    return;
+  }
+  body.innerHTML = [
+    profileSection("Account Details", [
+      profileField("Full name", profile.name),
+      profileField("Email", profile.email),
+      profileField("Mobile phone", profile.phoneNumber),
+      profileField("Office phone", profile.officeNumber),
+      profileField("Date of birth", profile.dateOfBirth),
+      profileField("User role", profile.userRole),
+    ]),
+    profileSection("Adviser Details", [
+      profileField("ASIC Adviser Number", profile.asicNumber),
+      profileField("ABN", profile.abn),
+      profileField("ACN", profile.acn),
+      profileField("Occupation", profile.occupation),
+      profileField("Authorised Rep Number", profile.authorizedRepNumber),
+      profileField("Business name", profile.businessName),
+    ]),
+    profileSection("Address", [
+      profileField("Street", profile.address && profile.address.street),
+      profileField("Suburb", profile.address && profile.address.suburb),
+      profileField("State", profile.address && profile.address.state),
+      profileField("Postcode", profile.address && profile.address.postCode),
+      profileField("Country", profile.address && profile.address.country),
+    ]),
+    profileSection("Practice Details", [
+      profileField("Practice name", profile.practiceName),
+      profileField("Licensee name", profile.licenseeName),
+      profileField("Compliance manager", profile.complianceManagerName),
+      profileField("Website", profile.website),
+      profileField("User status", profile.userStatus),
+      profileField("App access", profile.appAccess),
+    ])
+  ].join("");
+}
+
+async function loadUserProfile(){
+  const profile = currentUserProfile();
+  const userId = profile.id;
+  const endpoint = userId
+    ? `/api/sara/users/${encodeURIComponent(userId)}`
+    : `/api/sara/users/me?email=${encodeURIComponent(profile.email || sessionStorage.getItem(AUTH_EMAIL_KEY) || "")}`;
+  const res = await fetch(endpoint, {headers: authHeaders()});
+  const payload = await res.json().catch(()=>({}));
+  if (!res.ok || payload.status === false || payload.Status === false){
+    const modelError = (payload.modelErrors || payload.ModelErrors || [])[0];
+    const message = payload.message || payload.Message || payload.error || payload.Error ||
+      (modelError && (modelError.errorMessage || modelError.ErrorMessage)) ||
+      "Could not load user profile.";
+    throw new Error(message);
+  }
+  const data = payload.data || payload.Data || payload;
+  const fullProfile = normalizeUserProfile(data);
+  sessionStorage.setItem(AUTH_PROFILE_KEY, JSON.stringify(fullProfile));
+  return fullProfile;
+}
+
+async function showUserProfile(){
+  document.getElementById("profileModal").hidden = false;
+  renderProfileModal(currentUserProfile(), true);
+  try{
+    const profile = await loadUserProfile();
+    renderProfileModal(profile);
+  }catch(err){
+    document.getElementById("profileModal").hidden = true;
+    toast(err.message || "Could not load user profile.");
+  }
+}
+
+function cleanExtractedName(value){
+  return String(value || "")
+    .replace(/\s{2,}/g, " ")
+    .replace(/\\n/g, " ")
+    .replace(/\b(email|phone|mobile|authorised representative|afsl|adviser)\b.*$/i, "")
+    .replace(/[|•].*$/, "")
+    .trim()
+    .slice(0, 120);
+}
+
+function isLikelySectionHeading(value){
+  const cleaned = cleanExtractedName(value).toLowerCase();
+  if (!cleaned) return true;
+  return [
+    "product recommendations",
+    "platform recommendations",
+    "investment recommendations",
+    "recommendations",
+    "scope of advice",
+    "statement of advice",
+    "record of advice",
+    "your adviser",
+    "your advice",
+    "executive summary",
+    "important information",
+    "table of contents"
+  ].some(term => cleaned === term || cleaned.includes(term));
+}
+
+function matchLine(text, patterns){
+  for (const pattern of patterns){
+    const match = text.match(pattern);
+    if (match && match[1]){
+      const value = cleanExtractedName(match[1]);
+      if (value && !isLikelySectionHeading(value)) return value;
+    }
+  }
+  return "";
+}
+
+function filenameClientGuess(){
+  const soaFile = fileOfType("soa_vetted") || files[0];
+  if (!soaFile || !soaFile.file) return "";
+  let name = "";
+  try{ name = decodeURIComponent(soaFile.file.name); }catch(_){ name = soaFile.file.name; }
+  name = name
+    .replace(/\.[^.]+$/, "")
+    .replace(/[_-]+/g, " ")
+    .replace(/\b(SOA|Statement of Advice|Advice|Draft|Final|Signed)\b.*$/i, "")
+    .replace(/\b\d{1,2}[./-]\d{1,2}[./-]\d{2,4}\b.*$/g, "")
+    .trim();
+  return isLikelySectionHeading(name) ? "" : cleanExtractedName(name);
+}
+
+async function ensureUserProfileForReview(){
+  let profile = currentUserProfile();
+  if (profile.practiceName && profile.licenseeName && profile.name && profile.email){
+    return profile;
+  }
+  profile = await loadUserProfile();
+  if (!profile.practiceName || !profile.licenseeName){
+    throw new Error("Your user profile did not include both practice and licensee details.");
+  }
+  return profile;
+}
+
+function inferReviewDetails(profile=currentUserProfile()){
+  const text = allText();
+  const adviser = matchLine(text, [
+    /(?:financial adviser|adviser name|prepared by|your adviser|adviser)\s*[:\-]\s*([^\r\n]{2,120})/i,
+    /(?:financial adviser|adviser name|prepared by|your adviser|adviser)\s*\r?\n\s*([^\r\n]{2,120})/i,
+    /(?:authorised representative|authorized representative)\s*[:\-]\s*([^\r\n]{2,120})/i,
+    /(?:authorised representative|authorized representative)\s*\r?\n\s*([^\r\n]{2,120})/i
+  ]);
+  const adviserEmailPattern = adviser
+    ? new RegExp(`${adviser.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}[\\s\\S]{0,250}?([A-Z0-9._%+-]+@[A-Z0-9.-]+\\.[A-Z]{2,})`, "i")
+    : null;
+  const adviserEmailMatch = adviserEmailPattern ? text.match(adviserEmailPattern) : null;
+  const clientName = matchLine(text, [
+    /(?:client name|client\(s\)|client|prepared for|advice prepared for|statement of advice prepared for)\s*[:\-]\s*([^\r\n]{2,120})/i,
+    /(?:client name|client\(s\)|prepared for|advice prepared for|statement of advice prepared for)\s*\r?\n\s*([^\r\n]{2,120})/i
+  ]) || filenameClientGuess();
+
+  return {
+    createdDateTime: new Date().toISOString(),
+    creator: profile.id || profile.name || profile.email || sessionStorage.getItem(AUTH_EMAIL_KEY) || "",
+    adviser: (selectedReviewClient && selectedReviewClient.adviserName) || adviser || "",
+    adviserEmail: (selectedReviewClient && selectedReviewClient.adviserEmail) || (adviserEmailMatch ? adviserEmailMatch[1] : ""),
+    clientName: (selectedReviewClient && selectedReviewClient.clientName) || clientName || "",
+    licenseeName: (selectedReviewClient && selectedReviewClient.licenseeName) || profile.licenseeName || "",
+    practiceName: (selectedReviewClient && selectedReviewClient.practiceName) || profile.practiceName || "",
+    soaId: selectedReviewClient && selectedReviewClient.id || "",
+    reviewType: role === "roa" ? "ROA Pre-Vet" : "SOA Pre-Vet"
+  };
+}
+
+async function createSaraReview(){
+  const profile = await ensureUserProfileForReview();
+  const form = new FormData();
+  const details = inferReviewDetails(profile);
+  Object.entries(details).forEach(([key,value])=>{
+    if (value) form.append(key, value);
+  });
+  (COMPLIANCE_PROMPTS[role] || COMPLIANCE_PROMPTS.soa).forEach(prompt=>{
+    form.append("prompts", prompt);
+  });
+  files.forEach(f=>form.append("files", f.file, f.file.name));
+
+  const res = await fetch("/api/sara/reviews/create", {
+    method: "POST",
+    headers: authHeaders(),
+    body: form
+  });
+  const raw = await res.text();
+  let payload = {};
+  try{ payload = raw ? JSON.parse(raw) : {}; }catch(_){ payload = {message: raw}; }
+  if (!res.ok || payload.status === false || payload.Status === false){
+    console.warn("SARA review create failed", payload);
+    let message = apiErrorMessage(payload, "Could not create the SARA review.");
+    const ref = payload.requestId || payload.traceId || payload.TraceId;
+    if (ref) message += ` Ref: ${ref}`;
+    throw new Error(`Review create failed: ${message}`);
+  }
+  const data = payload.data || payload.Data || {};
+  const saraReview = data.saraReview || data.SaraReview || data || {};
+  activeCreatedReview = {
+    id: saraReview.id || saraReview.Id || "",
+    practiceName: saraReview.practiceName || saraReview.PracticeName || details.practiceName || "",
+    clientName: saraReview.clientName || saraReview.ClientName || details.clientName || "",
+    adviserName: saraReview.adviser || saraReview.Adviser || details.adviser || "",
+  };
+  reviewsLoaded = false;
+  return activeCreatedReview;
+}
+
+function statusForPrevetResult(){
+  return "Requires Review";
+}
+
+async function updateCreatedReviewStatus(result){
+  if (!activeCreatedReview || !activeCreatedReview.id) return;
+  const reviewStatus = statusForPrevetResult(result);
+  const res = await fetch(`/api/sara/reviews/${encodeURIComponent(activeCreatedReview.id)}/status`, {
+    method: "PATCH",
+    headers: {...authHeaders(), "Content-Type":"application/json"},
+    body: JSON.stringify({
+      reviewStatus,
+      practiceName: activeCreatedReview.practiceName || (selectedReviewClient && selectedReviewClient.practiceName) || ""
+    })
+  });
+  const payload = await res.json().catch(()=>({}));
+  if (!res.ok || payload.status === false || payload.Status === false){
+    throw new Error(apiErrorMessage(payload, "Could not update SARA review status."));
+  }
+  activeCreatedReview.status = reviewStatus;
+  clientReviews = clientReviews.map(review =>
+    review.id === activeCreatedReview.id ? {...review, status: reviewStatus} : review
+  );
+  reviewsLoaded = false;
+}
+
+async function updateReviewStatusOnly(review, reviewStatus){
+  const practiceName = review.practiceName || currentUserProfile().practiceName || "";
+  const res = await fetch(`/api/sara/reviews/${encodeURIComponent(review.id)}/status`, {
+    method: "PATCH",
+    headers: {...authHeaders(), "Content-Type":"application/json"},
+    body: JSON.stringify({reviewStatus, practiceName})
+  });
+  const payload = await res.json().catch(()=>({}));
+  if (!res.ok || payload.status === false || payload.Status === false){
+    throw new Error(apiErrorMessage(payload, "Could not update SARA review status."));
+  }
+  review.status = reviewStatus;
+  if (review.raw) review.raw.reviewStatus = reviewStatus;
+  reviewsLoaded = false;
+}
+
+async function loadReviews(force=false){
+  if (reviewsLoaded && !force) return;
+  const body = document.getElementById("reviewsTableBody");
+  body.innerHTML = `<tr><td colspan="7">Loading reviews...</td></tr>`;
+  try{
+    let profile = currentUserProfile();
+    if (!profile.licenseeName){
+      profile = await loadUserProfile();
+    }
+    const query = profile.licenseeName ? `?licenceeName=${encodeURIComponent(profile.licenseeName)}` : "";
+    const res = await fetch(`/api/sara/reviews${query}`, { headers: authHeaders() });
+    if (!res.ok) throw new Error("HTTP " + res.status);
+    const payload = await res.json();
+    const data = Array.isArray(payload) ? payload : (payload.data || payload.Data || []);
+    activeReviewsLicenseeName = profile.licenseeName || "";
+    clientReviews = sortReviewsNewestFirst(scopeReviewsToLicensee(data.map(normalizeReview), activeReviewsLicenseeName));
+    reviewsLoaded = true;
+    reviewsPagination.page = 1;
+    populateReviewFilters();
+    renderReviews();
+  }catch(e){
+    console.warn("reviews load failed", e);
+    activeReviewsLicenseeName = "";
+    clientReviews = sortReviewsNewestFirst(FALLBACK_CLIENT_REVIEWS);
+    reviewsLoaded = true;
+    reviewsPagination.page = 1;
+    populateReviewFilters();
+    renderReviews();
+    toast("Using sample reviews because the SARA Reviews API could not be loaded.");
+  }
+}
+
+async function loadObservations(force=false){
+  if (observationsLoaded && !force) return;
+  const body = document.getElementById("observationsTableBody");
+  body.innerHTML = `<tr><td colspan="7">Loading observations...</td></tr>`;
+  try{
+    let profile = currentUserProfile();
+    if (!profile.licenseeName){
+      profile = await loadUserProfile();
+    }
+    const query = profile.licenseeName ? `?licenceeName=${encodeURIComponent(profile.licenseeName)}` : "";
+    const res = await fetch(`/api/sara/observations${query}`, { headers: authHeaders() });
+    if (!res.ok) throw new Error("HTTP " + res.status);
+    const payload = await res.json();
+    const data = Array.isArray(payload) ? payload : (payload.data || payload.Data || []);
+    activeObservationsLicenseeName = profile.licenseeName || "";
+    observations = sortReviewsNewestFirst(scopeReviewsToLicensee(data.map(normalizeObservation), activeObservationsLicenseeName));
+    observationsLoaded = true;
+    observationsPagination.page = 1;
+    populateObservationFilters();
+    renderObservations();
+  }catch(e){
+    console.warn("observations load failed", e);
+    activeObservationsLicenseeName = "";
+    observations = [];
+    observationsLoaded = true;
+    observationsPagination.page = 1;
+    populateObservationFilters();
+    renderObservations();
+    toast("Could not load SARA observations.");
+  }
+}
+
+function findReview(id){
+  return clientReviews.find(r=>String(r.id) === String(id));
+}
+
+function apiErrorMessage(payload, fallback){
+  const rawUpstream = `${payload.message || ""} ${payload.upstreamMessage || ""} ${payload.upstreamBody || ""}`;
+  if (/ingestion\/jobs|advicegpt\.openai\.azure\.com|Unauthorized/i.test(rawUpstream) && Number(payload.upstreamHttpStatus) === 403){
+    const trace = payload.upstreamTraceId ? ` Upstream trace: ${payload.upstreamTraceId}.` : "";
+    return `The SARA API could not create the review because its Azure OpenAI ingestion service is not authorised.${trace}`;
+  }
+  const modelErrors = payload.modelErrors || payload.ModelErrors || [];
+  const modelMessage = modelErrors
+    .map(err=>{
+      const field = err.fieldName || err.FieldName || "Field";
+      const message = err.errorMessage || err.ErrorMessage || "";
+      return message ? `${field}: ${message}` : field;
+    })
+    .filter(Boolean)
+    .join("; ");
+  const message = modelMessage || payload.message || payload.Message || payload.error || payload.Error || fallback;
+  const detailParts = [];
+  if (payload.upstreamHttpStatus) detailParts.push(`Upstream HTTP ${payload.upstreamHttpStatus}`);
+  if (payload.upstreamTraceId) detailParts.push(`Upstream trace ${payload.upstreamTraceId}`);
+  if (payload.upstreamBody && String(payload.upstreamBody).trim() && !String(payload.upstreamBody).includes(message)){
+    detailParts.push(`Upstream body: ${String(payload.upstreamBody).slice(0, 500)}`);
+  }
+  return detailParts.length ? `${message} (${detailParts.join("; ")})` : message;
+}
+
+let pendingEditReviewId = "";
+
+function openReview(id){
+  const review = findReview(id);
+  if (!review || !review.id){
+    toast("This review could not be opened.");
+    return;
+  }
+  const profile = currentUserProfile();
+  pendingEditReviewId = review.id;
+  document.getElementById("editClientName").value = review.clientName === "-" ? "" : review.clientName;
+  document.getElementById("editAdviserName").value = review.adviserName === "-" ? "" : review.adviserName;
+  document.getElementById("editReviewStatus").value = review.status || "Not started";
+  document.getElementById("editPracticeName").value =
+    (review.practiceName && review.practiceName !== "-" ? review.practiceName : "") || profile.practiceName || "";
+  document.getElementById("editReviewModal").hidden = false;
+}
+
+function hideEditReview(){
+  pendingEditReviewId = "";
+  document.getElementById("editReviewModal").hidden = true;
+}
+
+async function updateReview(id, values){
+  const review = findReview(id);
+  if (!review) throw new Error("This review could not be updated.");
+  const res = await fetch(`/api/sara/reviews/${encodeURIComponent(review.id)}`, {
+    method: "PATCH",
+    headers: {...authHeaders(), "Content-Type": "application/json"},
+    body: JSON.stringify({
+      reviewStatus: values.reviewStatus,
+      practiceName: values.practiceName,
+      adviserName: values.adviserName,
+      clientName: values.clientName
+    })
+  });
+  const payload = await res.json().catch(()=>({}));
+  if (!res.ok || payload.status === false || payload.Status === false){
+    throw new Error(apiErrorMessage(payload, "Could not update the review."));
+  }
+  review.clientName = values.clientName || "-";
+  review.adviserName = values.adviserName || "-";
+  review.status = displayReviewStatus(values.reviewStatus);
+  review.practiceName = values.practiceName || review.practiceName || "-";
+  if (review.raw){
+    review.raw.clientName = review.clientName;
+    review.raw.adviserName = review.adviserName;
+    review.raw.reviewStatus = review.status;
+    review.raw.practiceName = review.practiceName;
+  }
+  populateReviewFilters();
+  renderReviews();
+  return payload;
+}
+
+let pendingDeleteReviewId = "";
+
+function showDeleteConfirmation(id){
+  const review = findReview(id);
+  if (!review || !review.id){
+    toast("This review could not be deleted.");
+    return;
+  }
+  pendingDeleteReviewId = review.id;
+  document.getElementById("deleteConfirmText").textContent =
+    `Delete ${review.clientName || "this review"}? This cannot be undone.`;
+  document.getElementById("deleteConfirmModal").hidden = false;
+}
+
+function hideDeleteConfirmation(){
+  pendingDeleteReviewId = "";
+  document.getElementById("deleteConfirmModal").hidden = true;
+}
+
+async function deleteReview(id){
+  const review = findReview(id);
+  if (!review) return;
+  const query = review.practiceName && review.practiceName !== "-" ? `?practiceName=${encodeURIComponent(review.practiceName)}` : "";
+  const res = await fetch(`/api/sara/reviews/${encodeURIComponent(review.id)}${query}`, {
+    method: "DELETE",
+    headers: authHeaders()
+  });
+  const payload = await res.json().catch(()=>({}));
+  if (!res.ok || payload.status === false || payload.Status === false){
+    const modelError = (payload.modelErrors || payload.ModelErrors || [])[0];
+    const message = payload.message || payload.Message || payload.error || payload.Error ||
+      (modelError && (modelError.errorMessage || modelError.ErrorMessage)) ||
+      "Could not delete the review.";
+    throw new Error(message);
+  }
+  clientReviews = clientReviews.filter(r=>String(r.id) !== String(review.id));
+  reviewsPagination.page = Math.min(
+    reviewsPagination.page,
+    Math.max(1, Math.ceil(clientReviews.filter(reviewMatchesFilters).length / reviewsPagination.pageSize))
+  );
+  populateReviewFilters();
+  renderReviews();
+}
+
+function filenameFromDisposition(disposition, fallback){
+  const match = String(disposition || "").match(/filename\*?=(?:UTF-8''|")?([^";]+)/i);
+  return match ? decodeURIComponent(match[1].replace(/"/g, "")) : fallback;
+}
+
+function downloadBlob(blob, filename){
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = filename;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+}
+
+function blobFromBase64(content, contentType){
+  let base64 = String(content || "");
+  let mime = contentType || "application/vnd.openxmlformats-officedocument.wordprocessingml.document";
+  const dataUrl = base64.match(/^data:([^;]+);base64,(.+)$/);
+  if (dataUrl){
+    mime = dataUrl[1] || mime;
+    base64 = dataUrl[2] || "";
+  }
+  const binary = atob(base64);
+  const bytes = new Uint8Array(binary.length);
+  for (let i=0; i<binary.length; i++) bytes[i] = binary.charCodeAt(i);
+  return new Blob([bytes], {type:mime});
+}
+
+function downloadFromApiData(data, review){
+  const fallbackName = `${(review.clientName || "sara-review").replace(/[^a-z0-9]+/gi, "-")}-sara-report.docx`;
+  if (typeof data === "string"){
+    if (/^https?:\/\//i.test(data)){
+      window.open(data, "_blank", "noopener");
+      return;
+    }
+    downloadBlob(blobFromBase64(data), fallbackName);
+    return;
+  }
+  if (!data || typeof data !== "object"){
+    throw new Error("The SARA API did not return a report file. It may not have generated or saved the report yet.");
+  }
+  const url = data.url || data.Url || data.downloadUrl || data.DownloadUrl || data.fileUrl || data.FileUrl;
+  if (url){
+    window.open(url, "_blank", "noopener");
+    return;
+  }
+  const content = data.content || data.Content || data.fileContent || data.FileContent || data.base64 || data.Base64 || data.document || data.Document;
+  const filename = data.fileName || data.FileName || data.name || data.Name || review.reportFile || fallbackName;
+  const contentType = data.contentType || data.ContentType || data.mimeType || data.MimeType || "";
+  if (!content){
+    throw new Error("The SARA API did not return a report file. It may not have generated or saved the report yet.");
+  }
+  downloadBlob(blobFromBase64(content, contentType), filename);
+}
+
+async function downloadReviewReport(id){
+  const review = findReview(id);
+  if (!review || !review.id) throw new Error("This review could not be downloaded.");
+  const practiceName = review.practiceName && review.practiceName !== "-" ? review.practiceName : currentUserProfile().practiceName || "";
+  if (!practiceName) throw new Error("Practice name is required to download this SARA report.");
+  const res = await fetch(`/api/sara/reviews/${encodeURIComponent(review.id)}/download`, {
+    method: "POST",
+    headers: {...authHeaders(), "Content-Type":"application/json"},
+    body: JSON.stringify({practiceName})
+  });
+  const contentType = res.headers.get("Content-Type") || "";
+  if (!res.ok){
+    const payload = contentType.includes("json") ? await res.json().catch(()=>({})) : {message: await res.text()};
+    throw new Error(apiErrorMessage(payload, "Could not download SARA report."));
+  }
+  if (!contentType.includes("json")){
+    const blob = await res.blob();
+    const filename = filenameFromDisposition(
+      res.headers.get("Content-Disposition"),
+      review.reportFile || `${(review.clientName || "sara-review").replace(/[^a-z0-9]+/gi, "-")}-sara-report.docx`
+    );
+    downloadBlob(blob, filename);
+    return;
+  }
+  const payload = await res.json().catch(()=>({}));
+  if (payload.status === false || payload.Status === false){
+    throw new Error(apiErrorMessage(payload, "Could not download SARA report."));
+  }
+  downloadFromApiData(payload.data ?? payload.Data ?? payload, review);
+}
+
+function setActiveView(view){
+  const isReviews = view === "reviews";
+  const isObservations = view === "observations";
+  const isResult = view === "result";
+  document.getElementById("reviewsView").hidden = !isReviews;
+  document.getElementById("observationsView").hidden = !isObservations;
+  document.getElementById("uploadView").hidden = view !== "upload";
+  document.getElementById("resultView").hidden = !isResult;
+  document.getElementById("reviewsNav").classList.toggle("active", isReviews);
+  document.getElementById("observationsNav").classList.toggle("active", isObservations);
+}
+
+function setAppPath(path, replace=false){
+  if (window.location.pathname === path) return;
+  const nextUrl = `${path}${window.location.search || ""}${window.location.hash || ""}`;
+  if (replace) {
+    window.history.replaceState(null, "", nextUrl);
+  } else {
+    window.history.pushState(null, "", nextUrl);
+  }
+}
+
+function resultPathForReview(reviewId){
+  return `${RESULT_PATH_PREFIX}${encodeURIComponent(reviewId)}`;
+}
+
+function resultReviewIdFromPath(){
+  if (!window.location.pathname.startsWith(RESULT_PATH_PREFIX)) return "";
+  return decodeURIComponent(window.location.pathname.slice(RESULT_PATH_PREFIX.length));
+}
+
+function resultCacheKey(reviewId){
+  return `${RESULT_CACHE_PREFIX}${reviewId}`;
+}
+
+function saveCachedResult(reviewId, result, meta){
+  if (!reviewId || !result) return;
+  sessionStorage.setItem(resultCacheKey(reviewId), JSON.stringify({
+    result,
+    meta,
+    role,
+    review: activeCreatedReview,
+    savedAt: new Date().toISOString()
+  }));
+}
+
+function loadCachedResult(reviewId){
+  if (!reviewId) return null;
+  try{
+    return JSON.parse(sessionStorage.getItem(resultCacheKey(reviewId)) || "null");
+  }catch(_){
+    return null;
+  }
+}
 
 // ---------- Filename -> type guess ----------
 function guessType(name){
@@ -364,6 +2086,7 @@ function renderAll(){
   renderFiles();
   renderChecklist();
   document.getElementById("results").style.display = "none";
+  document.getElementById("resultView").hidden = true;
 }
 
 // ---------- File intake + text extraction ----------
@@ -395,6 +2118,11 @@ async function extractText(file){
 let fid = 0;
 async function addFiles(fileList){
   for (const file of fileList){
+    const ext = file.name.toLowerCase().split(".").pop();
+    if (ext === "doc"){
+      toast("Legacy .doc files are not supported. Please save the document as .docx, PDF or TXT and upload it again.");
+      continue;
+    }
     const entry = {id:++fid, file, type:guessType(file.name), text:undefined};
     files.push(entry);
     renderFiles(); renderChecklist();
@@ -436,7 +2164,16 @@ async function evaluate(meta, role){
   const headers = {"Content-Type":"application/json"};
   if (CONFIG.FUNCTION_KEY) headers["x-functions-key"] = CONFIG.FUNCTION_KEY;
   const res = await fetch(endpoint, {method:"POST", headers, body:JSON.stringify(payload)});
-  if (!res.ok) throw new Error("HTTP "+res.status+" — "+(await res.text()).slice(0,200));
+  if (!res.ok) {
+    const raw = await res.text();
+    let message = raw;
+    try {
+      const err = JSON.parse(raw);
+      message = err.message || err.error || raw;
+      if (err.requestId) message += " Ref: " + err.requestId;
+    } catch (_) {}
+    throw new Error("HTTP " + res.status + " - " + message.slice(0, 200));
+  }
   const r = await res.json();
   // normalise (handles camelCase or .NET PascalCase, and enum-index outcomes)
   return {
@@ -456,6 +2193,7 @@ async function evaluate(meta, role){
 const runBtn = document.getElementById("run");
 runBtn.onclick = async ()=>{
   const meta = { classified: document.getElementById("classified").checked };
+  if (!selectedReviewClient){ toast("Choose or create a client first."); return; }
   if (!files.length){ toast("Add at least one document."); return; }
   const required = ROLES[role].checklist.filter(c=>c[2]).map(c=>c[0]);
   const present = new Set(files.map(f=>f.type));
@@ -466,12 +2204,29 @@ runBtn.onclick = async ()=>{
   }
 
   runBtn.disabled = true;
-  runBtn.innerHTML = `<span class="spinner"></span> Running pre-vet…`;
+  runBtn.innerHTML = `<span class="spinner"></span> Creating review...`;
   let result;
   try{
+    try{
+      activeCreatedReview = await createSaraReview();
+      toast("SARA review created.");
+    }catch(createError){
+      console.warn("SARA review create failed", createError);
+      toast(`${createError.message} Continuing pre-vet.`);
+    }
+    runBtn.innerHTML = `<span class="spinner"></span> Running pre-vet...`;
     result = await evaluate(meta, role);
+    if (activeCreatedReview && activeCreatedReview.id){
+      runBtn.innerHTML = `<span class="spinner"></span> Updating review status...`;
+      try{
+        await updateCreatedReviewStatus(result);
+      }catch(statusError){
+        console.warn("SARA review status update failed", statusError);
+        toast(`${statusError.message} Review results are still shown below.`);
+      }
+    }
     lastMeta = meta;
-    renderResult(result);
+    renderResult(result, {meta, reviewId: activeCreatedReview && activeCreatedReview.id});
   }catch(e){
     toast("Pre-vet failed: "+e.message);
     console.error(e);
@@ -482,12 +2237,19 @@ runBtn.onclick = async ()=>{
 };
 
 let lastResult=null, lastMeta=null;
-function renderResult(r){
+function renderResult(r, options={}){
+  const shouldUpdatePath = !(options && options.skipPathUpdate);
   lastResult=r;
+  if (options.meta) lastMeta = options.meta;
+  const reviewId = options.reviewId || (activeCreatedReview && activeCreatedReview.id) || resultReviewIdFromPath();
+  if (reviewId){
+    saveCachedResult(reviewId, r, lastMeta);
+    if (shouldUpdatePath) setAppPath(resultPathForReview(reviewId));
+  }
   const body = document.getElementById("resultBody");
   const permitted = r.roaPermitted;
   const icon = permitted ? "✓" : "✕";
-  let html = `
+  let statusHtml = `
     <div class="banner ${permitted?"permitted":"escalate"}">
       <div class="verdict">${icon} ${escapeHtml(r.summary)}</div>
       <div class="route ${r.requiresComplianceReview?"comp":"self"}">
@@ -498,9 +2260,10 @@ function renderResult(r){
         : "This advice document meets requirements. Where you hold self-approve authority it may be finalised (subject to the self-approve gate); observations below are coaching only."}</p>
       <p class="small muted">SARA 2.0 · ${ROLES[role].name} · ${new Date().toLocaleString()}</p>
     </div>`;
+  let findingsHtml = "";
 
   r.findings.forEach(x=>{
-    html += `<div class="finding">
+    findingsHtml += `<div class="finding">
       <div class="top"><span class="tid">${escapeHtml(x.testId)}</span>
         <span class="q">${escapeHtml(x.question)}</span>
         <span class="chip ${x.outcome}">${escapeHtml(x.outcome)}</span></div>
@@ -510,13 +2273,22 @@ function renderResult(r){
   });
 
   if (r.adviserSuggestion){
-    html += `<div class="coaching"><b>Adviser coaching</b><br/>${escapeHtml(r.adviserSuggestion)}</div>`;
+    findingsHtml += `<div class="coaching"><b>Adviser coaching</b><br/>${escapeHtml(r.adviserSuggestion)}</div>`;
   }
 
-  body.innerHTML = html;
+  body.innerHTML = `
+    <div class="result-status">${statusHtml}</div>
+    <div class="findings-scroll" tabindex="0" aria-label="Pre-vet findings">
+      ${findingsHtml || '<div class="empty-panel">No findings returned.</div>'}
+    </div>`;
   const res = document.getElementById("results");
-  res.style.display = "block";
-  res.scrollIntoView({behavior:"smooth", block:"nearest"});
+  res.style.display = "flex";
+  setActiveView("result");
+  document.getElementById("resultView").scrollIntoView({block:"start", behavior:"smooth"});
+  requestAnimationFrame(()=>{
+    const findings = document.querySelector(".findings-scroll");
+    if (findings) findings.scrollTop = 0;
+  });
 }
 
 function escapeHtml(s){ return String(s).replace(/[&<>"']/g, c=>(
@@ -525,7 +2297,8 @@ function escapeHtml(s){ return String(s).replace(/[&<>"']/g, c=>(
 document.getElementById("reset").onclick = ()=>{
   files=[]; renderFiles(); renderChecklist();
   document.getElementById("results").style.display="none";
-  window.scrollTo({top:0,behavior:"smooth"});
+  startNewReview();
+  document.querySelector(".dashboard-main").scrollTo({top:0,behavior:"smooth"});
 };
 
 // ---------- Export the on-screen result to a Word (.doc) file ----------
@@ -579,8 +2352,10 @@ document.getElementById("exportWord").onclick = ()=>{
   ).join("");
 
   let html = '<html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:w="urn:schemas-microsoft-com:office:word" xmlns="http://www.w3.org/TR/REC-html40">'
-    + '<head><meta charset="utf-8"><title>SARA 2.0 Pre-Vet Result</title></head>'
-    + '<body style="font-family:Arial,sans-serif;font-size:11pt;color:#222">'
+    + '<head><meta charset="utf-8"><title>SARA 2.0 Pre-Vet Result</title>'
+    + '<style>body,p,table,tr,td,th,h1,h2,h3,span,b,i{font-family:Calibri,Arial,sans-serif;} body{font-size:11pt;color:#222;}</style>'
+    + '</head>'
+    + '<body style="font-family:Calibri,Arial,sans-serif;font-size:11pt;color:#222">'
     + '<h1 style="color:#1F3864;font-size:19pt;margin:0 0 2pt 0">SARA 2.0 — Pre-Vet Result</h1>'
     + '<p style="color:#666;border-bottom:2px solid #2E75B6;padding-bottom:6px;margin-top:2pt">'+subtitle+'</p>'
     + '<table style="border-collapse:collapse;width:100%;margin:8px 0 14px 0">'
@@ -627,8 +2402,413 @@ function toast(msg){
   clearTimeout(toastT); toastT=setTimeout(()=>t.style.display="none",3600);
 }
 
+function showApp(){
+  document.body.classList.remove("login-active");
+  document.getElementById("loginPage").hidden = true;
+  document.getElementById("appShell").hidden = false;
+}
+
+function showLogin(){
+  document.body.classList.add("login-active");
+  document.getElementById("loginPage").hidden = false;
+  document.getElementById("appShell").hidden = true;
+}
+
+function showDashboard(){
+  showApp();
+  setActiveView("reviews");
+  loadReviews(true);
+}
+
+function showUploadWorkflow(){
+  showApp();
+  startNewReview({skipPathUpdate:true});
+}
+
+function showResultRoute(reviewId){
+  showApp();
+  const cached = loadCachedResult(reviewId);
+  if (cached && cached.result){
+    role = cached.role || role;
+    lastMeta = cached.meta || null;
+    activeCreatedReview = cached.review || {id: reviewId};
+    renderAll();
+    renderResult(cached.result, {skipPathUpdate:true, reviewId});
+    return;
+  }
+  lastResult = null;
+  lastMeta = null;
+  activeCreatedReview = {id: reviewId};
+  setActiveView("result");
+  document.getElementById("results").style.display = "flex";
+  document.getElementById("resultBody").innerHTML = `
+    <div class="empty-panel">
+      Result details are not available in this browser session. Open the review from the dashboard or run another check.
+    </div>`;
+}
+
+document.getElementById("loginForm").addEventListener("submit", async e=>{
+  e.preventDefault();
+  const email = document.getElementById("loginEmail").value.trim();
+  const password = document.getElementById("loginPassword").value;
+  if (!email || !password){
+    toast("Enter your email address and password.");
+    return;
+  }
+  const button = e.currentTarget.querySelector(".login-submit");
+  button.disabled = true;
+  button.textContent = "Logging in...";
+  try{
+    const res = await fetch("/api/sara/login", {
+      method: "POST",
+      headers: {"Content-Type":"application/json"},
+      body: JSON.stringify({email, password})
+    });
+    const payload = await res.json().catch(()=>({}));
+    const data = payload.data || payload.Data || {};
+    const token = data.jwtToken || data.JwtToken || data.token || "";
+    const requiresTwoFactor = data.requiresTwoFactorAuthentication ?? data.RequiresTwoFactorAuthentication;
+    const modelError = (payload.modelErrors || payload.ModelErrors || [])[0];
+    const message = payload.message || payload.Message || (modelError && (modelError.errorMessage || modelError.ErrorMessage));
+
+    if (!res.ok || payload.status === false || payload.Status === false){
+      throw new Error(message || "Login failed. Check your email and password.");
+    }
+    if (requiresTwoFactor){
+      throw new Error("This login requires two-factor authentication, which is not connected in this MVP yet.");
+    }
+    if (!token){
+      throw new Error("Login succeeded, but no access token was returned.");
+    }
+
+    const profile = profileFromToken(token, email);
+    sessionStorage.setItem(AUTH_KEY, "true");
+    sessionStorage.setItem(AUTH_TOKEN_KEY, token);
+    sessionStorage.setItem(AUTH_EMAIL_KEY, email);
+    sessionStorage.setItem(AUTH_PROFILE_KEY, JSON.stringify(profile));
+    reviewsLoaded = false;
+    window.location.assign(DASHBOARD_PATH);
+  }catch(err){
+    toast(err.message || "Login failed.");
+  }finally{
+    button.disabled = false;
+    button.textContent = "Log in";
+  }
+});
+
+document.getElementById("forgotPassword").onclick = ()=>{
+  toast("Password reset is not connected in this MVP. Contact support for access.");
+};
+
+window.addEventListener("popstate", ()=>{
+  const hasSession =
+    sessionStorage.getItem(AUTH_KEY) === "true" && Boolean(sessionStorage.getItem(AUTH_TOKEN_KEY));
+  if (!hasSession){
+    showLogin();
+    return;
+  }
+  const resultReviewId = resultReviewIdFromPath();
+  if (resultReviewId){
+    showResultRoute(resultReviewId);
+  } else if (window.location.pathname === UPLOAD_PATH){
+    showUploadWorkflow();
+  } else {
+    showDashboard();
+  }
+});
+
+document.getElementById("addNewBtn").onclick = ()=>startNewReview();
+
+document.getElementById("createReviewBtn").onclick = ()=>startNewReview();
+
+document.getElementById("reviewsNav").onclick = ()=>{
+  setAppPath(DASHBOARD_PATH);
+  setActiveView("reviews");
+  loadReviews();
+};
+
+document.getElementById("observationsNav").onclick = ()=>{
+  setAppPath(DASHBOARD_PATH);
+  setActiveView("observations");
+  loadObservations();
+};
+
+document.getElementById("createNewClientToggle").addEventListener("change", e=>{
+  document.getElementById("newClientFields").hidden = !e.target.checked;
+  renderClientSearchResults();
+});
+
+document.getElementById("clientSearchInput").addEventListener("input", ()=>{
+  if (document.getElementById("createNewClientToggle").checked) return;
+  clearTimeout(clientSearchTimer);
+  clientSearchTimer = setTimeout(async ()=>{
+    try{
+      await searchClientProfiles();
+    }catch(err){
+      toast(err.message || "Could not search clients.");
+    }
+  }, 300);
+});
+
+document.getElementById("clientSearchResults").addEventListener("click", e=>{
+  const button = e.target.closest(".client-result");
+  if (!button) return;
+  selectedReviewClient = clientSearchRows.find(c=>String(c.id) === String(button.dataset.clientId));
+  renderClientSearchResults();
+});
+
+document.getElementById("clientStepNext").onclick = async ()=>{
+  const button = document.getElementById("clientStepNext");
+  button.disabled = true;
+  button.textContent = document.getElementById("createNewClientToggle").checked ? "Creating..." : "Loading...";
+  try{
+    if (document.getElementById("createNewClientToggle").checked){
+      await createClientProfileFromForm();
+      toast("Client created.");
+    } else if (!selectedReviewClient) {
+      await searchClientProfiles();
+      if (clientSearchRows.length === 1){
+        selectedReviewClient = clientSearchRows[0];
+      }
+    }
+    showDocumentStep();
+  }catch(err){
+    toast(err.message || "Choose or create a client.");
+  }finally{
+    button.disabled = false;
+    button.textContent = "Next";
+  }
+};
+
+document.getElementById("profileBtn").onclick = ()=>{
+  showUserProfile();
+};
+
+document.getElementById("logoutBtn").onclick = ()=>{
+  sessionStorage.removeItem(AUTH_KEY);
+  sessionStorage.removeItem(AUTH_TOKEN_KEY);
+  sessionStorage.removeItem(AUTH_EMAIL_KEY);
+  sessionStorage.removeItem(AUTH_PROFILE_KEY);
+  window.location.assign("/login");
+};
+
+document.getElementById("reviewSearch").addEventListener("input", e=>{
+  reviewFilters.search = e.target.value;
+  reviewsPagination.page = 1;
+  renderReviews();
+});
+
+document.getElementById("reviewStatusFilter").addEventListener("change", e=>{
+  reviewFilters.status = e.target.value;
+  reviewsPagination.page = 1;
+  renderReviews();
+});
+
+document.getElementById("reviewAdviserFilter").addEventListener("change", e=>{
+  reviewFilters.adviserName = e.target.value;
+  reviewsPagination.page = 1;
+  renderReviews();
+});
+
+document.getElementById("reviewPracticeFilter").addEventListener("change", e=>{
+  reviewFilters.practiceName = e.target.value;
+  reviewsPagination.page = 1;
+  renderReviews();
+});
+
+document.getElementById("refreshObservationsBtn").onclick = ()=>{
+  loadObservations(true);
+};
+
+document.getElementById("observationSearch").addEventListener("input", e=>{
+  observationFilters.search = e.target.value;
+  observationsPagination.page = 1;
+  renderObservations();
+});
+
+document.getElementById("observationStatusFilter").addEventListener("change", e=>{
+  observationFilters.status = e.target.value;
+  observationsPagination.page = 1;
+  renderObservations();
+});
+
+document.getElementById("observationAdviserFilter").addEventListener("change", e=>{
+  observationFilters.adviserName = e.target.value;
+  observationsPagination.page = 1;
+  renderObservations();
+});
+
+document.getElementById("observationPracticeFilter").addEventListener("change", e=>{
+  observationFilters.practiceName = e.target.value;
+  observationsPagination.page = 1;
+  renderObservations();
+});
+
+document.getElementById("reviewsPageSize").addEventListener("change", e=>{
+  reviewsPagination.pageSize = Number(e.target.value) || 10;
+  reviewsPagination.page = 1;
+  renderReviews();
+});
+
+document.getElementById("reviewsPrevPage").onclick = ()=>{
+  if (reviewsPagination.page <= 1) return;
+  reviewsPagination.page -= 1;
+  renderReviews();
+};
+
+document.getElementById("reviewsNextPage").onclick = ()=>{
+  const totalPages = Math.max(1, Math.ceil(reviewsPagination.filteredCount / reviewsPagination.pageSize));
+  if (reviewsPagination.page >= totalPages) return;
+  reviewsPagination.page += 1;
+  renderReviews();
+};
+
+document.getElementById("observationsPageSize").addEventListener("change", e=>{
+  observationsPagination.pageSize = Number(e.target.value) || 10;
+  observationsPagination.page = 1;
+  renderObservations();
+});
+
+document.getElementById("observationsPrevPage").onclick = ()=>{
+  if (observationsPagination.page <= 1) return;
+  observationsPagination.page -= 1;
+  renderObservations();
+};
+
+document.getElementById("observationsNextPage").onclick = ()=>{
+  const totalPages = Math.max(1, Math.ceil(observationsPagination.filteredCount / observationsPagination.pageSize));
+  if (observationsPagination.page >= totalPages) return;
+  observationsPagination.page += 1;
+  renderObservations();
+};
+
+document.getElementById("reviewsTableBody").addEventListener("change", async e=>{
+  if (!e.target.classList.contains("status-select")) return;
+  const select = e.target;
+  const row = select.closest("tr");
+  const review = row ? findReview(row.dataset.reviewId) : null;
+  if (!review){
+    toast("This review could not be updated.");
+    return;
+  }
+  const previousStatus = review.status || "Not started";
+  const nextStatus = displayReviewStatus(select.value);
+  select.classList.remove("done", "requires-review", "aborted");
+  select.classList.add(statusClass(nextStatus));
+  select.disabled = true;
+  try{
+    await updateReviewStatusOnly(review, nextStatus);
+    toast("Review status updated.");
+  }catch(error){
+    console.warn("SARA review status update failed", error);
+    select.value = previousStatus;
+    select.classList.remove("done", "requires-review", "aborted");
+    select.classList.add(statusClass(previousStatus));
+    toast(error.message);
+  }finally{
+    select.disabled = false;
+  }
+});
+
+document.getElementById("reviewsTableBody").addEventListener("click", e=>{
+  const downloadButton = e.target.closest(".review-download");
+  const editButton = e.target.closest(".review-edit");
+  const deleteButton = e.target.closest(".review-delete");
+  if (downloadButton){
+    downloadButton.disabled = true;
+    downloadReviewReport(downloadButton.dataset.reviewId)
+      .then(()=>toast("SARA report downloaded."))
+      .catch(err=>toast(err.message || "Could not download SARA report."))
+      .finally(()=>{ downloadButton.disabled = false; });
+    return;
+  }
+  if (editButton){
+    openReview(editButton.dataset.reviewId);
+  }
+  if (deleteButton){
+    showDeleteConfirmation(deleteButton.dataset.reviewId);
+  }
+});
+
+document.getElementById("cancelDeleteReview").onclick = hideDeleteConfirmation;
+document.getElementById("deleteConfirmModal").addEventListener("click", e=>{
+  if (e.target.id === "deleteConfirmModal") hideDeleteConfirmation();
+});
+document.getElementById("closeProfileModal").onclick = ()=>{
+  document.getElementById("profileModal").hidden = true;
+};
+document.getElementById("profileModal").addEventListener("click", e=>{
+  if (e.target.id === "profileModal") document.getElementById("profileModal").hidden = true;
+});
+document.getElementById("cancelEditReview").onclick = hideEditReview;
+document.getElementById("editReviewModal").addEventListener("click", e=>{
+  if (e.target.id === "editReviewModal") hideEditReview();
+});
+document.getElementById("editReviewForm").addEventListener("submit", async e=>{
+  e.preventDefault();
+  const id = pendingEditReviewId;
+  if (!id) return;
+  const button = document.getElementById("saveEditReview");
+  const values = {
+    clientName: document.getElementById("editClientName").value.trim(),
+    adviserName: document.getElementById("editAdviserName").value.trim(),
+    reviewStatus: document.getElementById("editReviewStatus").value,
+    practiceName: document.getElementById("editPracticeName").value.trim()
+  };
+  if (!values.practiceName){
+    toast("Practice name is required to update this review.");
+    return;
+  }
+  button.disabled = true;
+  button.textContent = "Saving...";
+  try{
+    await updateReview(id, values);
+    hideEditReview();
+    toast("Review updated.");
+  }catch(err){
+    toast(err.message || "Could not update the review.");
+  }finally{
+    button.disabled = false;
+    button.textContent = "Save";
+  }
+});
+document.getElementById("confirmDeleteReview").onclick = async ()=>{
+  const button = document.getElementById("confirmDeleteReview");
+  const id = pendingDeleteReviewId;
+  if (!id) return;
+  button.disabled = true;
+  button.textContent = "Deleting...";
+  try{
+    await deleteReview(id);
+    hideDeleteConfirmation();
+    toast("Review deleted.");
+  }catch(err){
+    toast(err.message || "Could not delete the review.");
+  }finally{
+    button.disabled = false;
+    button.textContent = "Delete";
+  }
+};
+
 // init
 renderAll();
+populateReviewFilters();
+renderReviews();
+populateObservationFilters();
+renderObservations();
+const hasAuthenticatedSession =
+  sessionStorage.getItem(AUTH_KEY) === "true" && Boolean(sessionStorage.getItem(AUTH_TOKEN_KEY));
+const initialResultReviewId = resultReviewIdFromPath();
+if (initialResultReviewId && hasAuthenticatedSession) {
+  showResultRoute(initialResultReviewId);
+} else if (window.location.pathname === UPLOAD_PATH && hasAuthenticatedSession) {
+  showUploadWorkflow();
+} else if (hasAuthenticatedSession) {
+  if (window.location.pathname !== DASHBOARD_PATH) setAppPath(DASHBOARD_PATH, true);
+  showDashboard();
+} else {
+  showLogin();
+}
 </script>
 </body>
 </html>
