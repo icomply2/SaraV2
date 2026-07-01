@@ -145,7 +145,10 @@
   .pager-btn:disabled{opacity:.45;cursor:not-allowed}
   .page-size{height:34px;border:1px solid #cfd2dc;border-radius:5px;background:#fff;color:var(--login);padding:0 8px}
   .status-select{width:146px;height:28px;border:0;border-radius:3px;color:#fff;font-weight:700;padding:0 8px;background:#5b6068}
-  .status-select.done{background:#38aa89}.status-select.requires-review{background:#d88b24}.status-select.aborted{background:#b8b0b3}
+  .status-select.pass,.status-select.done{background:#38aa89}
+  .status-select.review,.status-select.requires-review{background:#d88b24}
+  .status-select.fail{background:#c24136}
+  .status-select.aborted{background:#b8b0b3}
   .row-actions{display:flex;gap:10px;color:#7a8794}
   .row-actions button{border:0;background:transparent;color:inherit;padding:0;cursor:pointer}
   .row-actions button:hover{color:var(--login)}
@@ -303,14 +306,16 @@
   .result-actions .btn{width:auto;min-width:170px}
   .banner{border-radius:var(--radius);padding:16px 18px;margin-bottom:18px;border:1px solid}
   .banner.permitted{background:var(--pass-bg);border-color:#bbf7d0}
+  .banner.review{background:var(--review-bg);border-color:#fde68a}
   .banner.escalate{background:var(--fail-bg);border-color:#fecaca}
   .banner .verdict{font-size:17px;font-weight:700;display:flex;align-items:center;gap:10px}
   .banner.permitted .verdict{color:#0f6b3d}
+  .banner.review .verdict{color:#92400e}
   .banner.escalate .verdict{color:#b1322a}
   .banner p{margin:8px 0 0;color:var(--ink);font-size:14px}
   .route{display:inline-block;margin-top:10px;font-size:12px;padding:5px 11px;border-radius:999px;font-weight:600}
   .route.self{background:#dcfce7;color:#15803d;border:1px solid #bbf7d0}
-  .route.comp{background:#fee2e2;color:#b91c1c;border:1px solid #fecaca}
+  .route.comp{background:#fef3c7;color:#92400e;border:1px solid #fde68a}
 
   .finding{border:1px solid var(--line);border-radius:10px;padding:13px 15px;margin-bottom:10px;background:var(--panel-2)}
   .finding .top{display:flex;align-items:center;gap:10px}
@@ -330,6 +335,7 @@
   .criteria-list .finding-tag{display:inline-block;margin-right:6px;padding:1px 6px;border-radius:999px;background:#eef2f7;color:var(--ink);font-size:10px;font-weight:700;text-transform:uppercase}
   .evidence-list q{color:var(--ink);font-weight:600}
   .recommended-action{font-size:12px;color:var(--muted);line-height:1.45}
+  .finding-section-label{font-size:11px;text-transform:uppercase;letter-spacing:.45px;color:var(--faint)}
 
   .coaching{background:var(--brand-soft);border:1px solid #d7d9e1;border-radius:10px;padding:14px;margin-top:14px;font-size:13px;white-space:pre-wrap}
   .coaching b{color:var(--brand-2)}
@@ -658,7 +664,9 @@
           <label for="editReviewStatus">Review status</label>
           <select id="editReviewStatus" name="reviewStatus">
             <option>Not started</option>
-            <option>Requires Review</option>
+            <option>Pass</option>
+            <option>Review</option>
+            <option>Fail</option>
             <option>Done</option>
             <option>Aborted</option>
           </select>
@@ -1078,10 +1086,20 @@ let adviserOptions = [];
 let activeCreatedReview = null;
 
 function statusClass(status){
+  if (status === "Pass") return "pass";
+  if (status === "Review") return "review";
+  if (status === "Fail") return "fail";
   if (status === "Done") return "done";
   if (status === "Requires Review") return "requires-review";
   if (status === "Aborted") return "aborted";
   return "";
+}
+
+function reviewStatusOptions(status){
+  const statuses = ["Not started", "Pass", "Review", "Fail", "Done", "Aborted"];
+  const current = displayReviewStatus(status);
+  if (current && !statuses.includes(current)) statuses.splice(1, 0, current);
+  return statuses.map(value=>`<option ${current===value?"selected":""}>${escapeHtml(value)}</option>`).join("");
 }
 
 function reviewMatchesFilters(review){
@@ -1118,15 +1136,12 @@ function renderReviews(){
       <td>${escapeHtml(r.adviserName || "-")}</td>
       <td>
         <select class="status-select ${statusClass(r.status)}">
-          <option ${r.status==="Not started"?"selected":""}>Not started</option>
-          <option ${r.status==="Requires Review"?"selected":""}>Requires Review</option>
-          <option ${r.status==="Done"?"selected":""}>Done</option>
-          <option ${r.status==="Aborted"?"selected":""}>Aborted</option>
+          ${reviewStatusOptions(r.status)}
         </select>
       </td>
       <td>
         <div class="row-actions">
-          <button type="button" class="review-download" data-review-id="${escapeHtml(r.id)}" title="Download SARA report" ${r.id?"":"disabled"}><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><path d="M7 10l5 5 5-5"/><path d="M12 15V3"/></svg></button>
+          <button type="button" class="review-download" data-review-id="${escapeHtml(r.id)}" title="Download SARA 2.0 report" ${r.id?"":"disabled"}><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><path d="M7 10l5 5 5-5"/><path d="M12 15V3"/></svg></button>
           <button type="button" class="review-edit" data-review-id="${escapeHtml(r.id)}" title="Open review" ${r.id?"":"disabled"}><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg></button>
           <button type="button" class="review-delete" data-review-id="${escapeHtml(r.id)}" title="Delete review" ${r.id?"":"disabled"}><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 6h18"/><path d="M8 6V4h8v2"/><path d="M19 6l-1 14H6L5 6"/></svg></button>
         </div>
@@ -1300,9 +1315,11 @@ function sortReviewsNewestFirst(rows){
 
 function displayReviewStatus(value){
   const raw = String(value || "Not started").trim();
-  const compact = raw.replace(/[_-]/g, " ").toLowerCase();
+  const compact = raw.replace(/[_-]/g, " ").replace(/\s+/g, " ").toLowerCase().trim();
+  if (compact === "pass" || compact === "passed") return "Pass";
+  if (compact === "review" || compact === "requires review" || compact === "requiresreview" || compact === "review required") return "Review";
+  if (compact === "fail" || compact === "failed") return "Fail";
   if (compact === "done" || compact === "completed" || compact === "complete") return "Done";
-  if (compact === "requires review" || compact === "requiresreview" || compact === "review required") return "Requires Review";
   if (compact === "aborted" || compact === "cancelled" || compact === "canceled") return "Aborted";
   if (compact === "not started" || compact === "notstarted") return "Not started";
   return raw || "Not started";
@@ -1588,6 +1605,14 @@ function currentUserProfile(){
   }
 }
 
+function isComplianceManager(profile=currentUserProfile()){
+  return String(profile.userRole || "").trim().toLowerCase() === "compliance manager";
+}
+
+function scopedPracticeName(profile=currentUserProfile()){
+  return isComplianceManager(profile) ? "" : (profile.practiceName || "");
+}
+
 function objectName(value){
   if (!value) return "";
   if (typeof value === "string") return value;
@@ -1640,10 +1665,14 @@ function displayPersonName(person){
 
 function normalizeAdviser(item){
   item = item || {};
+  const practice = item.practice || item.Practice || {};
+  const licensee = item.licensee || item.Licensee || item.licencee || item.Licencee || {};
   return {
     id: item.id || item.Id || "",
     name: item.name || item.Name || item.fullName || item.FullName || item.email || item.Email || "",
     email: item.email || item.Email || "",
+    practiceName: objectName(practice) || item.practiceName || item.PracticeName || item.practice || item.Practice || currentUserProfile().practiceName || "",
+    licenseeName: objectName(licensee) || item.licenseeName || item.LicenseeName || item.licenceeName || item.LicenceeName || item.licensee || item.Licensee || currentUserProfile().licenseeName || "",
     raw: item
   };
 }
@@ -1660,8 +1689,8 @@ function normalizeClientProfile(item){
     adviserId: adviser.id,
     adviserName: adviser.name,
     adviserEmail: adviser.email,
-    practiceName: item.practice || item.Practice || item.practiceName || item.PracticeName || currentUserProfile().practiceName || "",
-    licenseeName: item.licensee || item.Licensee || item.licenseeName || item.LicenseeName || currentUserProfile().licenseeName || "",
+    practiceName: item.practice || item.Practice || item.practiceName || item.PracticeName || adviser.practiceName || currentUserProfile().practiceName || "",
+    licenseeName: item.licensee || item.Licensee || item.licenseeName || item.LicenseeName || adviser.licenseeName || currentUserProfile().licenseeName || "",
     raw: item
   };
 }
@@ -1711,7 +1740,8 @@ async function loadAdvisers(){
   const profile = await ensureUserProfileForReview();
   const query = new URLSearchParams();
   if (profile.licenseeName) query.set("licenseeName", profile.licenseeName);
-  if (profile.practiceName) query.set("practiceName", profile.practiceName);
+  const practiceName = scopedPracticeName(profile);
+  if (practiceName) query.set("practiceName", practiceName);
   const res = await fetch(`/api/sara/advisers?${query.toString()}`, {headers: authHeaders()});
   const payload = await res.json().catch(()=>({}));
   if (!res.ok || payload.status === false || payload.Status === false){
@@ -1721,19 +1751,25 @@ async function loadAdvisers(){
   adviserOptions = rows.map(normalizeAdviser).filter(a=>a.name);
   const select = document.getElementById("newClientAdviser");
   select.innerHTML = `<option value="">Choose an option...</option>` +
-    adviserOptions.map(a=>`<option value="${escapeHtml(a.id || a.email || a.name)}">${escapeHtml(a.name)}</option>`).join("");
+    adviserOptions.map(a=>`<option value="${escapeHtml(a.id || a.email || a.name)}">${escapeHtml(a.name)}${a.practiceName ? ` — ${escapeHtml(a.practiceName)}` : ""}</option>`).join("");
+}
+
+function clientProfileSearchPayload(clientName, profile=currentUserProfile()){
+  const payload = {
+    continuationToken: "",
+    pageSize: 10,
+    clientName,
+    licenseeName: profile.licenseeName || ""
+  };
+  const practiceName = scopedPracticeName(profile);
+  if (practiceName) payload.practiceName = practiceName;
+  return payload;
 }
 
 async function searchClientProfiles(){
   const profile = await ensureUserProfileForReview();
   const term = document.getElementById("clientSearchInput").value.trim();
-  const payload = {
-    continuationToken: "",
-    pageSize: 10,
-    clientName: term,
-    practiceName: profile.practiceName || "",
-    licenseeName: profile.licenseeName || ""
-  };
+  const payload = clientProfileSearchPayload(term, profile);
   const res = await fetch("/api/sara/client-profiles/search", {
     method: "POST",
     headers: {...authHeaders(), "Content-Type":"application/json"},
@@ -1751,13 +1787,7 @@ async function searchClientProfiles(){
 
 async function searchClientProfilesByName(clientName){
   const profile = await ensureUserProfileForReview();
-  const payload = {
-    continuationToken: "",
-    pageSize: 10,
-    clientName,
-    practiceName: profile.practiceName || "",
-    licenseeName: profile.licenseeName || ""
-  };
+  const payload = clientProfileSearchPayload(clientName, profile);
   const res = await fetch("/api/sara/client-profiles/search", {
     method: "POST",
     headers: {...authHeaders(), "Content-Type":"application/json"},
@@ -1784,14 +1814,20 @@ async function createClientProfileFromForm(){
   if (!firstName || !lastName) throw new Error("Enter the client's first and last name.");
   const adviser = selectedAdviserFromForm();
   if (!adviser.name) throw new Error("Choose an adviser for this client.");
+  const adviserPracticeName = adviser.practiceName || profile.practiceName || "";
+  const adviserLicenseeName = adviser.licenseeName || profile.licenseeName || "";
+  if (!adviserPracticeName) throw new Error("The selected adviser does not have a practice name.");
+  if (!adviserLicenseeName) throw new Error("The selected adviser does not have a licensee name.");
   const clientName = `${firstName} ${lastName}`.trim();
   const now = new Date().toISOString();
   const profileId = window.crypto && window.crypto.randomUUID ? window.crypto.randomUUID() : `${Date.now()}-${Math.random().toString(16).slice(2)}`;
   const sharedWith = profile.id ? [profile.id] : [];
   const payload = {
     id: profileId,
-    licensee: profile.licenseeName || "",
-    practice: profile.practiceName || "",
+    licensee: adviserLicenseeName,
+    licenseeName: adviserLicenseeName,
+    practice: adviserPracticeName,
+    practiceName: adviserPracticeName,
     createdDate: now,
     modifiedDate: now,
     shareWith: sharedWith,
@@ -1808,7 +1844,11 @@ async function createClientProfileFromForm(){
       id: adviser.id || "",
       entity: adviser.raw && (adviser.raw.entity || adviser.raw.Entity) || "",
       name: adviser.name || "",
-      email: adviser.email || ""
+      email: adviser.email || "",
+      practice: adviserPracticeName,
+      practiceName: adviserPracticeName,
+      licensee: adviserLicenseeName,
+      licenseeName: adviserLicenseeName
     }
   };
   const res = await fetch("/api/sara/client-profiles", {
@@ -1828,8 +1868,8 @@ async function createClientProfileFromForm(){
     adviserId: created.adviserId || adviser.id || "",
     adviserName: created.adviserName || adviser.name || "",
     adviserEmail: created.adviserEmail || adviser.email || "",
-    practiceName: created.practiceName || profile.practiceName || "",
-    licenseeName: created.licenseeName || profile.licenseeName || ""
+    practiceName: created.practiceName || adviserPracticeName,
+    licenseeName: created.licenseeName || adviserLicenseeName
   };
   const verifiedRows = await searchClientProfilesByName(clientName);
   const verified = verifiedRows.find(c =>
@@ -2067,25 +2107,146 @@ function promptTextForCheck(check){
 }
 
 async function compliancePromptsForReviewRole(reviewRole){
-  if (reviewRole === "roa") return COMPLIANCE_PROMPTS.roa.slice();
+  const checks = await complianceChecksForReviewRole(reviewRole);
+  return checks.map(promptTextFromCheckRecord);
+}
+
+async function complianceChecksForReviewRole(reviewRole){
+  if (reviewRole === "roa"){
+    return COMPLIANCE_PROMPTS.roa.map((prompt, index)=>({
+      index: index + 1,
+      testId: `ROA-${String(index + 1).padStart(2, "0")}`,
+      title: `RoA check ${index + 1}`,
+      reviewType: "ROA Pre-Vet",
+      regulatoryReference: "s946B",
+      auditQuestion: prompt,
+      message: prompt,
+      promptText: prompt
+    }));
+  }
   const checks = await loadSettingsChecks();
   return checks
     .slice()
-    .sort((a,b)=>(Number(a.index) || 0) - (Number(b.index) || 0))
-    .map(promptTextForCheck);
+    .sort((a,b)=>(Number(a.index) || 0) - (Number(b.index) || 0));
 }
 
-async function createSaraReview(){
+function promptTextFromCheckRecord(check){
+  return check.promptText || promptTextForCheck(check);
+}
+
+function findingConversationContent(finding){
+  const parts = [];
+  const reasoning = String(finding.reasoning || "").trim();
+  const criteria = normalizeCriteriaAssessment(finding.criteriaAssessment);
+  const evidence = normalizeEvidenceItems(finding.evidenceItems);
+  const gaps = normalizeStringArray(finding.gaps);
+  const action = String(finding.recommendedAction || "").trim();
+  if (reasoning) parts.push(`SARA assessment:\n${reasoning}`);
+  if (criteria.length){
+    parts.push("Basis and criteria assessment:\n" + criteria.map(item=>{
+      const findingLabel = item.finding ? `${item.finding} - ` : "";
+      return `- ${findingLabel}${item.criterion}${item.reason ? `: ${item.reason}` : ""}`;
+    }).join("\n"));
+  }
+  if (evidence.length){
+    parts.push("Evidence relied on:\n" + evidence.map(item=>{
+      const source = item.sourceText ? `"${item.sourceText}"` : "";
+      return `- ${source}${item.whyItMatters ? ` ${item.whyItMatters}` : ""}`.trim();
+    }).join("\n"));
+  }else if (finding.evidence){
+    parts.push(`Evidence relied on:\n${finding.evidence}`);
+  }
+  if (gaps.length) parts.push("Compliance gaps / residual risk:\n" + gaps.map(gap=>`- ${gap}`).join("\n"));
+  if (action) parts.push(`Recommended next action:\n${action}`);
+  return parts.join("\n\n") || String(finding.evidence || finding.question || "").trim();
+}
+
+function findingCitations(finding, check){
+  const evidence = normalizeEvidenceItems(finding.evidenceItems);
+  const title = check.title || finding.testId || finding.question || "SARA finding";
+  if (evidence.length){
+    return evidence.map((item, index)=>({
+      content: item.sourceText || item.whyItMatters || "",
+      title,
+      url: "",
+      filepath: files[0] && files[0].file ? files[0].file.name : "",
+      chunkId: `${finding.testId || check.testId || "finding"}-${index + 1}`
+    }));
+  }
+  const fallback = String(finding.evidence || "").trim();
+  return fallback ? [{
+    content: fallback,
+    title,
+    url: "",
+    filepath: files[0] && files[0].file ? files[0].file.name : "",
+    chunkId: `${finding.testId || check.testId || "finding"}-1`
+  }] : [];
+}
+
+function conversationsForResult(promptChecks, result){
+  const findings = (result && result.findings) || [];
+  const byTestId = new Map(findings.map(f=>[String(f.testId || "").toLowerCase(), f]));
+  return promptChecks.map((check, index)=>{
+    const finding = byTestId.get(String(check.testId || "").toLowerCase()) || findings[index] || {};
+    const outcome = displayReviewStatus(finding.outcome || "Review");
+    return {
+      promptId: check.id || check.testId || `prompt-${index + 1}`,
+      promptIndex: Number(check.index) || index + 1,
+      auditQuestion: check.auditQuestion || finding.question || check.title || "",
+      promptRegRef: check.regulatoryReference || "",
+      content: findingConversationContent(finding),
+      citation: {
+        intent: outcome,
+        citations: findingCitations(finding, check)
+      },
+      intent: outcome,
+      passfail: outcome,
+      status: outcome,
+      remediationComments: [],
+      adviserComments: [],
+      managerComments: [],
+      history: []
+    };
+  });
+}
+
+function appendConversationToForm(form, conversation, index){
+  const prefix = `conversations[${index}]`;
+  form.append(`${prefix}.promptId`, conversation.promptId || "");
+  form.append(`${prefix}.promptIndex`, String(conversation.promptIndex || index + 1));
+  form.append(`${prefix}.auditQuestion`, conversation.auditQuestion || "");
+  form.append(`${prefix}.promptRegRef`, conversation.promptRegRef || "");
+  form.append(`${prefix}.content`, conversation.content || "");
+  form.append(`${prefix}.citation.intent`, conversation.citation && conversation.citation.intent || "");
+  form.append(`${prefix}.intent`, conversation.intent || "");
+  form.append(`${prefix}.passfail`, conversation.passfail || "");
+  form.append(`${prefix}.status`, conversation.status || "");
+  (conversation.citation && conversation.citation.citations || []).forEach((citation, citationIndex)=>{
+    const citationPrefix = `${prefix}.citation.citations[${citationIndex}]`;
+    form.append(`${citationPrefix}.content`, citation.content || "");
+    form.append(`${citationPrefix}.title`, citation.title || "");
+    form.append(`${citationPrefix}.url`, citation.url || "");
+    form.append(`${citationPrefix}.filepath`, citation.filepath || "");
+    form.append(`${citationPrefix}.chunkId`, citation.chunkId || "");
+  });
+}
+
+async function createSaraReview(result=null){
   const profile = await ensureUserProfileForReview();
   const form = new FormData();
   const details = inferReviewDetails(profile);
   Object.entries(details).forEach(([key,value])=>{
     if (value) form.append(key, value);
   });
-  const prompts = await compliancePromptsForReviewRole(role);
-  prompts.forEach(prompt=>{
-    form.append("prompts", prompt);
+  const promptChecks = await complianceChecksForReviewRole(role);
+  promptChecks.forEach(check=>{
+    form.append("prompts", promptTextFromCheckRecord(check));
   });
+  if (result){
+    conversationsForResult(promptChecks, result).forEach((conversation, index)=>{
+      appendConversationToForm(form, conversation, index);
+    });
+  }
   files.forEach(f=>form.append("files", f.file, f.file.name));
 
   const res = await fetch("/api/sara/reviews/create", {
@@ -2108,6 +2269,7 @@ async function createSaraReview(){
   activeCreatedReview = {
     id: saraReview.id || saraReview.Id || "",
     practiceName: saraReview.practiceName || saraReview.PracticeName || details.practiceName || "",
+    licenseeName: saraReview.licenseeName || saraReview.LicenseeName || details.licenseeName || "",
     clientName: saraReview.clientName || saraReview.ClientName || details.clientName || "",
     adviserName: saraReview.adviser || saraReview.Adviser || details.adviser || "",
   };
@@ -2115,8 +2277,14 @@ async function createSaraReview(){
   return activeCreatedReview;
 }
 
-function statusForPrevetResult(){
-  return "Requires Review";
+function statusForPrevetResult(result){
+  const findings = (result && result.findings) || [];
+  const outcomes = findings.map(f=>String(f.outcome || "").toLowerCase());
+  if (outcomes.includes("fail")) return "Fail";
+  if (outcomes.includes("review") || (result && result.requiresComplianceReview)) return "Review";
+  if (outcomes.length && outcomes.every(outcome=>outcome === "pass")) return "Pass";
+  if (result && result.roaPermitted && !result.requiresComplianceReview) return "Pass";
+  return "Review";
 }
 
 async function updateCreatedReviewStatus(result){
@@ -2264,7 +2432,7 @@ function openReview(id){
   pendingEditReviewId = review.id;
   document.getElementById("editClientName").value = review.clientName === "-" ? "" : review.clientName;
   document.getElementById("editAdviserName").value = review.adviserName === "-" ? "" : review.adviserName;
-  document.getElementById("editReviewStatus").value = review.status || "Not started";
+  document.getElementById("editReviewStatus").value = displayReviewStatus(review.status || "Not started");
   document.getElementById("editPracticeName").value =
     (review.practiceName && review.practiceName !== "-" ? review.practiceName : "") || profile.practiceName || "";
   document.getElementById("editReviewModal").hidden = false;
@@ -2411,32 +2579,22 @@ function downloadFromApiData(data, review){
 async function downloadReviewReport(id){
   const review = findReview(id);
   if (!review || !review.id) throw new Error("This review could not be downloaded.");
-  const practiceName = review.practiceName && review.practiceName !== "-" ? review.practiceName : currentUserProfile().practiceName || "";
-  if (!practiceName) throw new Error("Practice name is required to download this SARA report.");
-  const res = await fetch(`/api/sara/reviews/${encodeURIComponent(review.id)}/download`, {
-    method: "POST",
-    headers: {...authHeaders(), "Content-Type":"application/json"},
-    body: JSON.stringify({practiceName})
-  });
-  const contentType = res.headers.get("Content-Type") || "";
-  if (!res.ok){
-    const payload = contentType.includes("json") ? await res.json().catch(()=>({})) : {message: await res.text()};
-    throw new Error(apiErrorMessage(payload, "Could not download SARA report."));
-  }
-  if (!contentType.includes("json")){
-    const blob = await res.blob();
-    const filename = filenameFromDisposition(
-      res.headers.get("Content-Disposition"),
-      review.reportFile || `${(review.clientName || "sara-review").replace(/[^a-z0-9]+/gi, "-")}-sara-report.docx`
-    );
-    downloadBlob(blob, filename);
+  const cached = loadCachedResult(review.id);
+  if (cached && cached.result){
+    downloadSaraReportDocument(cached.result, {
+      role: cached.role || reviewRoleFromReview(review),
+      reportContext: cached.reportContext || reviewReportContext(review, cached.review || {}),
+      filename: reportFilename(review)
+    });
     return;
   }
-  const payload = await res.json().catch(()=>({}));
-  if (payload.status === false || payload.Status === false){
-    throw new Error(apiErrorMessage(payload, "Could not download SARA report."));
-  }
-  downloadFromApiData(payload.data ?? payload.Data ?? payload, review);
+  const detail = await loadReviewDetailForReport(review);
+  const result = resultFromReviewDetail(detail, review);
+  downloadSaraReportDocument(result, {
+    role: reviewRoleFromReview(review),
+    reportContext: reviewReportContext(review, detail),
+    filename: reportFilename(review)
+  });
 }
 
 function setActiveView(view){
@@ -2483,6 +2641,7 @@ function saveCachedResult(reviewId, result, meta){
     meta,
     role,
     review: activeCreatedReview,
+    reportContext: lastReportContext,
     savedAt: new Date().toISOString()
   }));
 }
@@ -2494,6 +2653,99 @@ function loadCachedResult(reviewId){
   }catch(_){
     return null;
   }
+}
+
+function reviewRoleFromReview(review){
+  return /roa|record of advice/i.test(review && review.reviewType || "") ? "roa" : "soa";
+}
+
+function reviewReportContext(review, detail={}){
+  const detailReview = detail.saraReview || detail.SaraReview || detail.review || detail.Review || detail || {};
+  return {
+    reviewId: cleanReportValue(review && review.id || detailReview.id || detailReview.Id),
+    clientName: cleanReportValue((review && review.clientName) || detailReview.clientName || detailReview.ClientName),
+    adviserName: cleanReportValue((review && review.adviserName) || personName(detailReview.adviser) || detailReview.adviserName || detailReview.AdviserName || detailReview.adviser || detailReview.Adviser),
+    practiceName: cleanReportValue((review && review.practiceName) || detailReview.practiceName || detailReview.PracticeName),
+    licenseeName: cleanReportValue((review && review.licenseeName) || detailReview.licenseeName || detailReview.LicenseeName || detailReview.licenceeName || detailReview.LicenceeName)
+  };
+}
+
+function conversationValue(conversation, camel, pascal){
+  return conversation && (conversation[camel] ?? conversation[pascal] ?? "");
+}
+
+function conversationCitations(conversation){
+  const citation = conversationValue(conversation, "citation", "Citation") || {};
+  const citations = citation.citations || citation.Citations || [];
+  return Array.isArray(citations) ? citations : [];
+}
+
+function outcomeFromConversation(conversation){
+  return displayReviewStatus(
+    conversationValue(conversation, "passfail", "Passfail") ||
+    conversationValue(conversation, "passFail", "PassFail") ||
+    conversationValue(conversation, "status", "Status") ||
+    conversationValue(conversation, "intent", "Intent") ||
+    "Review"
+  );
+}
+
+function findingFromConversation(conversation, index){
+  const citations = conversationCitations(conversation);
+  const outcome = outcomeFromConversation(conversation);
+  const promptIndex = Number(conversationValue(conversation, "promptIndex", "PromptIndex")) || index + 1;
+  const promptId = conversationValue(conversation, "promptId", "PromptId") || `SOA-${String(promptIndex).padStart(2, "0")}`;
+  const regRef = conversationValue(conversation, "promptRegRef", "PromptRegRef");
+  const auditQuestion = conversationValue(conversation, "auditQuestion", "AuditQuestion") || `Compliance check ${promptIndex}`;
+  return {
+    testId: promptId,
+    question: regRef ? `${auditQuestion} (${regRef})` : auditQuestion,
+    outcome,
+    reasoning: conversationValue(conversation, "content", "Content"),
+    evidence: citations[0] && (citations[0].content || citations[0].Content) || "",
+    criteriaAssessment: [],
+    evidenceItems: citations.map(item=>({
+      sourceText: item.content || item.Content || "",
+      whyItMatters: item.title || item.Title || ""
+    })).filter(item=>item.sourceText || item.whyItMatters),
+    gaps: [],
+    recommendedAction: ""
+  };
+}
+
+function resultFromReviewDetail(detail, review){
+  const detailReview = detail.saraReview || detail.SaraReview || detail.review || detail.Review || detail || {};
+  const conversations = detailReview.conversations || detailReview.Conversations || detail.conversations || detail.Conversations || [];
+  const findings = Array.isArray(conversations)
+    ? conversations.map(findingFromConversation).filter(f=>f.reasoning || f.evidence || f.question)
+    : [];
+  const hasFail = findings.some(f=>f.outcome === "Fail");
+  const hasReview = findings.some(f=>f.outcome === "Review");
+  const status = displayReviewStatus((review && review.status) || detailReview.reviewStatus || detailReview.status || "Review");
+  const needsReview = hasFail || hasReview || status === "Review" || status === "Fail" || status === "Not started";
+  return {
+    roaPermitted: !needsReview,
+    requiresComplianceReview: needsReview,
+    summary: findings.length
+      ? (needsReview ? "SOA requires compliance review based on the saved SARA findings." : "SOA pre-vet completed with no saved review or fail outcomes.")
+      : "SARA 2.0 report template. No saved audit findings are available for this review yet.",
+    adviserSuggestion: "",
+    findings
+  };
+}
+
+async function loadReviewDetailForReport(review){
+  const practiceName = review.practiceName && review.practiceName !== "-" ? review.practiceName : currentUserProfile().practiceName || "";
+  if (!practiceName) return {};
+  const res = await fetch(`/api/sara/reviews/${encodeURIComponent(review.id)}?practiceName=${encodeURIComponent(practiceName)}`, {
+    headers: authHeaders()
+  });
+  const payload = await res.json().catch(()=>({}));
+  if (!res.ok || payload.status === false || payload.Status === false){
+    console.warn("SARA review detail unavailable for report template", payload);
+    return {};
+  }
+  return payload.data || payload.Data || payload;
 }
 
 // ---------- Filename -> type guess ----------
@@ -2700,6 +2952,18 @@ function normalizeEvidenceItems(value){
   })).filter(item=>item.sourceText || item.whyItMatters);
 }
 
+function displayResultSummary(summary, reviewRole=role){
+  let text = String(summary || "").trim();
+  if (reviewRole === "soa"){
+    text = text
+      .replace(/\bROA\b/g, "SOA")
+      .replace(/\bRecord of Advice\b/gi, "Statement of Advice")
+      .replace(/\bSOA not self-approvable without review\b/gi, "SOA requires compliance review")
+      .replace(/\bnot self-approvable\b/gi, "requires compliance review");
+  }
+  return text;
+}
+
 function renderFindingDetail(x){
   const criteria = normalizeCriteriaAssessment(x.criteriaAssessment);
   const evidenceItems = normalizeEvidenceItems(x.evidenceItems);
@@ -2707,22 +2971,22 @@ function renderFindingDetail(x){
   const action = String(x.recommendedAction || "").trim();
   let html = "";
   if (criteria.length){
-    html += `<div class="finding-block"><b>Criteria assessment</b><ul class="criteria-list">` +
+    html += `<div class="finding-block"><b>Basis and criteria assessment</b><ul class="criteria-list">` +
       criteria.map(item=>`<li><span class="finding-tag">${escapeHtml(item.finding || "Assessed")}</span>${escapeHtml(item.criterion)}${item.reason ? `: ${escapeHtml(item.reason)}` : ""}</li>`).join("") +
       `</ul></div>`;
   }
   if (evidenceItems.length){
-    html += `<div class="finding-block"><b>Evidence</b><ul class="evidence-list">` +
+    html += `<div class="finding-block"><b>Evidence relied on</b><ul class="evidence-list">` +
       evidenceItems.map(item=>`<li>${item.sourceText ? `<q>${escapeHtml(item.sourceText)}</q>` : ""}${item.whyItMatters ? ` ${escapeHtml(item.whyItMatters)}` : ""}</li>`).join("") +
       `</ul></div>`;
   }
   if (gaps.length){
-    html += `<div class="finding-block"><b>Gaps or residual risk</b><ul class="gap-list">` +
+    html += `<div class="finding-block"><b>Compliance gaps / residual risk</b><ul class="gap-list">` +
       gaps.map(gap=>`<li>${escapeHtml(gap)}</li>`).join("") +
       `</ul></div>`;
   }
   if (action){
-    html += `<div class="finding-block"><b>Recommended action</b><div class="recommended-action">${escapeHtml(action)}</div></div>`;
+    html += `<div class="finding-block"><b>Recommended next action</b><div class="recommended-action">${escapeHtml(action)}</div></div>`;
   }
   return html ? `<div class="finding-detail">${html}</div>` : "";
 }
@@ -2742,18 +3006,18 @@ runBtn.onclick = async ()=>{
   }
 
   runBtn.disabled = true;
-  runBtn.innerHTML = `<span class="spinner"></span> Creating review...`;
+  runBtn.innerHTML = `<span class="spinner"></span> Running pre-vet...`;
   let result;
   try{
+    result = await evaluate(meta, role);
+    runBtn.innerHTML = `<span class="spinner"></span> Creating review...`;
     try{
-      activeCreatedReview = await createSaraReview();
-      toast("SARA review created.");
+      activeCreatedReview = await createSaraReview(result);
+      toast("SARA review created with audit findings.");
     }catch(createError){
       console.warn("SARA review create failed", createError);
       toast(`${createError.message} Continuing pre-vet.`);
     }
-    runBtn.innerHTML = `<span class="spinner"></span> Running pre-vet...`;
-    result = await evaluate(meta, role);
     if (activeCreatedReview && activeCreatedReview.id){
       runBtn.innerHTML = `<span class="spinner"></span> Updating review status...`;
       try{
@@ -2774,26 +3038,46 @@ runBtn.onclick = async ()=>{
   }
 };
 
-let lastResult=null, lastMeta=null;
+let lastResult=null, lastMeta=null, lastReportContext=null;
+function cleanReportValue(value){
+  value = String(value || "").trim();
+  return value && value !== "-" ? value : "";
+}
+function buildReportContext(reviewId=""){
+  const profile = currentUserProfile();
+  const cached = lastReportContext || {};
+  return {
+    reviewId: cleanReportValue(reviewId || (activeCreatedReview && activeCreatedReview.id) || cached.reviewId || resultReviewIdFromPath()),
+    clientName: cleanReportValue((activeCreatedReview && activeCreatedReview.clientName) || (selectedReviewClient && selectedReviewClient.clientName) || cached.clientName),
+    adviserName: cleanReportValue((activeCreatedReview && activeCreatedReview.adviserName) || (selectedReviewClient && selectedReviewClient.adviserName) || cached.adviserName),
+    practiceName: cleanReportValue((activeCreatedReview && activeCreatedReview.practiceName) || (selectedReviewClient && selectedReviewClient.practiceName) || cached.practiceName || profile.practiceName),
+    licenseeName: cleanReportValue((activeCreatedReview && activeCreatedReview.licenseeName) || (selectedReviewClient && selectedReviewClient.licenseeName) || cached.licenseeName || profile.licenseeName)
+  };
+}
 function renderResult(r, options={}){
   const shouldUpdatePath = !(options && options.skipPathUpdate);
   lastResult=r;
   if (options.meta) lastMeta = options.meta;
   const reviewId = options.reviewId || (activeCreatedReview && activeCreatedReview.id) || resultReviewIdFromPath();
+  lastReportContext = buildReportContext(reviewId);
   if (reviewId){
     saveCachedResult(reviewId, r, lastMeta);
     if (shouldUpdatePath) setAppPath(resultPathForReview(reviewId));
   }
   const body = document.getElementById("resultBody");
-  const permitted = r.roaPermitted;
-  const icon = permitted ? "✓" : "✕";
+  const hasFail = (r.findings || []).some(x=>x.outcome === "Fail");
+  const needsReview = Boolean(r.requiresComplianceReview);
+  const permitted = !needsReview && Boolean(r.roaPermitted);
+  const bannerClass = permitted ? "permitted" : (hasFail ? "escalate" : "review");
+  const icon = permitted ? "✓" : (hasFail ? "✕" : "!");
+  const summaryText = displayResultSummary(r.summary);
   let statusHtml = `
-    <div class="banner ${permitted?"permitted":"escalate"}">
-      <div class="verdict">${icon} ${escapeHtml(r.summary)}</div>
-      <div class="route ${r.requiresComplianceReview?"comp":"self"}">
-        ${r.requiresComplianceReview ? "Routes to compliance review" : "Eligible for adviser self-approval"}
+    <div class="banner ${bannerClass}">
+      <div class="verdict">${icon} ${escapeHtml(summaryText)}</div>
+      <div class="route ${needsReview?"comp":"self"}">
+        ${needsReview ? "Routes to compliance review" : "Eligible for adviser self-approval"}
       </div>
-      <p class="small" style="margin-top:8px">${r.requiresComplianceReview
+      <p class="small" style="margin-top:8px">${needsReview
         ? "This advice document has been flagged. Consider amending it to address the items below, then re-upload it for pre-vet. If your second attempt is also flagged or failed, escalate the file to your compliance officer for approval."
         : "This advice document meets requirements. Where you hold self-approve authority it may be finalised (subject to the self-approve gate); observations below are coaching only."}</p>
       <p class="small muted">SARA 2.0 · ${ROLES[role].name} · ${new Date().toLocaleString()}</p>
@@ -2805,8 +3089,8 @@ function renderResult(r, options={}){
       <div class="top"><span class="tid">${escapeHtml(x.testId)}</span>
         <span class="q">${escapeHtml(x.question)}</span>
         <span class="chip ${x.outcome}">${escapeHtml(x.outcome)}</span></div>
-      <p class="why">${escapeHtml(x.reasoning||"")}</p>
-      ${x.evidence?`<div class="ev">📎 ${escapeHtml(x.evidence)}</div>`:""}
+      <p class="why"><span class="finding-section-label">SARA assessment</span><br>${escapeHtml(x.reasoning||"")}</p>
+      ${x.evidence?`<div class="ev"><b>Evidence:</b> ${escapeHtml(x.evidence)}</div>`:""}
       ${renderFindingDetail(x)}
     </div>`;
   });
@@ -2840,17 +3124,27 @@ document.getElementById("reset").onclick = ()=>{
   document.querySelector(".dashboard-main").scrollTo({top:0,behavior:"smooth"});
 };
 
-// ---------- Export the on-screen result to a Word (.doc) file ----------
-document.getElementById("exportWord").onclick = ()=>{
-  if(!lastResult){ toast("Run a pre-vet first."); return; }
-  const r = lastResult, when = new Date().toLocaleString();
-  const roleName = ROLES[role] ? ROLES[role].name : role;
+function reportFilename(review){
+  const client = (review && review.clientName && review.clientName !== "-" ? review.clientName : "SARA2-report")
+    .replace(/[^a-z0-9]+/gi, "-")
+    .replace(/^-|-$/g, "");
+  return `${client || "SARA2-report"}-sara2-report-${new Date().toISOString().slice(0,10)}.doc`;
+}
+
+// ---------- Export SARA 2.0 result data to a Word (.doc) file ----------
+function downloadSaraReportDocument(r, options={}){
+  if(!r){ toast("No SARA 2.0 report data is available."); return; }
+  const reportRole = options.role || role;
+  const when = new Date().toLocaleString();
+  const roleName = ROLES[reportRole] ? ROLES[reportRole].name : reportRole;
   const E = s => escapeHtml(s==null?"":String(s));
   const col = o => o==="Fail"?"#C00000":o==="Review"?"#BF8F00":"#548235";
-  const subtitle = role==="roa" ? "Adviser pre-vet — s946B reliance on the prior SOA"
+  const subtitle = reportRole==="roa" ? "Adviser pre-vet — s946B reliance on the prior SOA"
                  : "Adviser pre-vet — compliance read of the Statement of Advice";
-  const reviewBasis = role==="roa" ? "Record of Advice + the prior SOA it relies on"
+  const reviewBasis = reportRole==="roa" ? "Record of Advice + the prior SOA it relies on"
                  : "Statement of Advice — single document, as uploaded (pre-vet)";
+  const reportContext = options.reportContext || buildReportContext(options.reviewId || "");
+  lastReportContext = reportContext;
   const splitBasis = q => { q=String(q);
     if (q.endsWith(")")){ const i=q.lastIndexOf(" ("); if (i>0){ const basis=q.slice(i+2,-1);
       if (/[0-9]|Act|Div|NCCP|Pt|best interests|disclosure/i.test(basis)) return {q:q.slice(0,i).trim(), basis}; } }
@@ -2859,6 +3153,7 @@ document.getElementById("exportWord").onclick = ()=>{
   const nFail=F.filter(x=>x.outcome==="Fail").length, nRev=F.filter(x=>x.outcome==="Review").length, nPass=F.filter(x=>x.outcome==="Pass").length;
   const resCol = nFail>0 ? "#C00000" : (r.requiresComplianceReview ? "#BF8F00" : "#548235");
   const route = r.requiresComplianceReview ? "Routes to compliance review" : "Eligible for adviser self-approval";
+  const summaryText = displayResultSummary(r.summary);
   const isClean = nFail===0 && nRev===0;
   const meaning = isClean
     ? "This advice document meets requirements. Where the adviser holds self-approve authority it may be finalised (subject to the self-approve gate); any observations below are coaching only."
@@ -2868,6 +3163,22 @@ document.getElementById("exportWord").onclick = ()=>{
   const td  = 'style="border:1px solid #bbb;padding:6px;vertical-align:top"';
   const mrow = (k,v)=> '<tr><td style="border:1px solid #bbb;padding:6px;background:#EEF3FB;font-weight:bold;width:150px">'+E(k)+'</td><td '+td+'>'+v+'</td></tr>';
   const cnum = (n,c)=> '<td style="border:1px solid #bbb;padding:6px;color:'+c+';font-weight:bold;text-align:center">'+n+'</td>';
+  const trimText = (text, max=260)=>{
+    text = String(text || "").replace(/\s+/g, " ").trim();
+    return text.length > max ? text.slice(0, max - 1).trim() + "…" : text;
+  };
+  const firstMeaningfulEvidence = (x)=>{
+    const items = normalizeEvidenceItems(x.evidenceItems);
+    const item = items.find(i=>i.sourceText || i.whyItMatters);
+    if (item) return trimText([item.sourceText ? `"${item.sourceText}"` : "", item.whyItMatters].filter(Boolean).join(" - "), 320);
+    return trimText(x.evidence || "", 320);
+  };
+  const keyIssue = (x)=>{
+    const gaps = normalizeStringArray(x.gaps);
+    if (x.outcome === "Pass" && gaps.length === 0) return trimText(x.reasoning || "No material issue identified.", 260);
+    if (gaps.length) return trimText(gaps[0], 260);
+    return trimText(x.reasoning || "Requires review.", 260);
+  };
 
   const parseObs = (text)=>{
     text = String(text||"").trim(); if(!text) return [];
@@ -2893,71 +3204,104 @@ document.getElementById("exportWord").onclick = ()=>{
   const criteriaHtml = (x)=>{
     const items = normalizeCriteriaAssessment(x.criteriaAssessment);
     if (!items.length) return "";
-    return '<p style="margin:6px 0 2px 0"><b>Criteria assessment:</b></p>'
+    return '<p style="margin:6px 0 2px 0"><b>Basis and criteria assessment:</b></p>'
       + listHtml(items.map(item=>'<b>'+E(item.finding || "Assessed")+'</b> - '+E(item.criterion)+(item.reason ? ': '+E(item.reason) : '')));
   };
   const evidenceHtml = (x)=>{
     const items = normalizeEvidenceItems(x.evidenceItems);
-    if (!items.length) return x.evidence ? '<p style="color:#555;margin:0"><i>Evidence: '+E(x.evidence)+'</i></p>' : "";
-    return '<p style="margin:6px 0 2px 0"><b>Evidence:</b></p>'
+    if (!items.length) return x.evidence ? '<p style="color:#555;margin:0"><b>Evidence relied on:</b> <i>'+E(x.evidence)+'</i></p>' : "";
+    return '<p style="margin:6px 0 2px 0"><b>Evidence relied on:</b></p>'
       + listHtml(items.map(item=>(item.sourceText ? '<i>"'+E(item.sourceText)+'"</i>' : '')+(item.whyItMatters ? ' - '+E(item.whyItMatters) : '')));
   };
   const gapsHtml = (x)=>{
     const gaps = normalizeStringArray(x.gaps);
     if (!gaps.length) return "";
-    return '<p style="margin:6px 0 2px 0"><b>Gaps or residual risk:</b></p>'
+    return '<p style="margin:6px 0 2px 0"><b>Compliance gaps / residual risk:</b></p>'
       + listHtml(gaps.map(gap=>E(gap)));
   };
   const actionHtml = (x)=>{
     const action = String(x.recommendedAction || "").trim();
-    return action ? '<p style="margin:6px 0 4px 0"><b>Recommended action:</b> '+E(action)+'</p>' : "";
+    return action ? '<p style="margin:6px 0 4px 0"><b>Recommended next action:</b> '+E(action)+'</p>' : "";
   };
+  const detailCellHtml = (x)=>{
+    const ev = firstMeaningfulEvidence(x);
+    return '<p style="margin:0 0 5px 0"><b>SARA assessment:</b> '+E(x.reasoning||"")+'</p>'
+      + (ev ? '<p style="margin:0 0 5px 0"><b>Primary evidence:</b> '+E(ev)+'</p>' : '')
+      + criteriaHtml(x)
+      + evidenceHtml(x)
+      + gapsHtml(x)
+      + actionHtml(x);
+  };
+  const findingAnchor = (x,i)=> `finding-detail-${String(x.testId || i + 1).replace(/[^a-z0-9_-]+/gi, "-")}`;
+  const outcomeLink = (x,i)=> '<a href="#'+findingAnchor(x,i)+'" style="color:'+col(x.outcome)+';font-weight:bold;text-decoration:underline">'+E(x.outcome)+'</a>';
+  const metaRows = [
+    ["Check", E(roleName)],
+    ["Client name", E(reportContext.clientName || "-")],
+    ["Adviser name", E(reportContext.adviserName || "-")],
+    ["Practice name", E(reportContext.practiceName || "-")],
+    ["Licensee name", E(reportContext.licenseeName || "-")],
+    ["Review basis", E(reviewBasis)],
+    ["Checked by", "SARA 2.0 · "+E(when)]
+  ];
+  if (reportContext.reviewId) metaRows.push(["Review ID", E(reportContext.reviewId)]);
 
   let html = '<html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:w="urn:schemas-microsoft-com:office:word" xmlns="http://www.w3.org/TR/REC-html40">'
     + '<head><meta charset="utf-8"><title>SARA 2.0 Pre-Vet Result</title>'
     + '<style>body,p,table,tr,td,th,h1,h2,h3,span,b,i{font-family:Calibri,Arial,sans-serif;} body{font-size:11pt;color:#222;}</style>'
     + '</head>'
     + '<body style="font-family:Calibri,Arial,sans-serif;font-size:11pt;color:#222">'
-    + '<h1 style="color:#1F3864;font-size:19pt;margin:0 0 2pt 0">SARA 2.0 — Pre-Vet Result</h1>'
-    + '<p style="color:#666;border-bottom:2px solid #2E75B6;padding-bottom:6px;margin-top:2pt">'+subtitle+'</p>'
+    + '<h1 style="color:#202040;font-size:20pt;margin:0 0 2pt 0">SARA 2.0 — Pre-Vet Result</h1>'
+    + '<p style="color:#555;border-bottom:3px solid #202040;padding-bottom:7px;margin-top:2pt">'+E(subtitle)+'</p>'
     + '<table style="border-collapse:collapse;width:100%;margin:8px 0 14px 0">'
-      + mrow('Check', E(roleName))
-      + mrow('Review basis', reviewBasis)
-      + mrow('Checked by', 'SARA 2.0 · '+E(when))
+      + metaRows.map(row=>mrow(row[0], row[1])).join("")
     + '</table>'
-    + '<p style="font-size:14pt;margin:6px 0"><b>RESULT: <span style="color:'+resCol+'">'+E(r.summary||"")+'</span></b></p>'
-    + '<table style="border-collapse:collapse;width:100%;margin:6px 0 12px 0"><tr><td style="border-left:5px solid '+resCol+';background:#F4F6FA;padding:10px 12px"><b style="color:'+resCol+'">What this means</b><br>'+E(meaning)+'<br><b>'+E(route)+'</b></td></tr></table>'
+    + '<p style="font-size:14pt;margin:6px 0"><b>Overall result: <span style="color:'+resCol+'">'+E(summaryText)+'</span></b></p>'
+    + '<table style="border-collapse:collapse;width:100%;margin:6px 0 12px 0"><tr><td style="border-left:6px solid '+resCol+';background:#F4F6FA;padding:10px 12px"><b style="color:'+resCol+'">Routing decision</b><br>'+E(route)+'<br><br><b>Meaning</b><br>'+E(meaning)+'</td></tr></table>'
     + '<table style="border-collapse:collapse;margin:0 0 16px 0"><tr><td '+tdh+'>Pass</td><td '+tdh+'>Review</td><td '+tdh+'>Fail</td></tr>'
       + '<tr>'+cnum(nPass,"#548235")+cnum(nRev,"#BF8F00")+cnum(nFail,"#C00000")+'</tr></table>'
-    + '<h2 style="color:#2E75B6">1. Regulatory assessment — summary</h2>'
-    + '<p>SARA&#39;s Pass / Review / Fail against each compliance question. Detailed reasoning follows in section 2.</p>'
-    + '<table style="border-collapse:collapse;width:100%"><tr><td '+tdh+'>Compliance question</td><td '+tdh+'>Basis</td><td '+tdh+'>SARA</td></tr>'
-    + F.map(x=>{ const s=splitBasis(x.question); return '<tr><td '+td+'>'+E(s.q)+'</td><td '+td+'>'+E(s.basis)+'</td><td style="border:1px solid #bbb;padding:6px;color:'+col(x.outcome)+';font-weight:bold">'+E(x.outcome)+'</td></tr>'; }).join("")
-    + '</table>'
-    + '<h2 style="color:#2E75B6">2. Regulatory assessment — detail</h2>'
-    + '<p>For each question: the legislative basis, what SARA found, and the outcome.</p>'
-    + F.map((x,i)=>{ const s=splitBasis(x.question);
-        return '<p style="margin:12px 0 2px 0"><b>2.'+(i+1)+'&nbsp; '+E(s.q)+' — <span style="color:'+col(x.outcome)+'">'+E(x.outcome)+'</span></b></p>'
-          + '<p style="color:#666;margin:0 0 4px 0"><i>Basis: '+E(s.basis)+'</i></p>'
-          + '<p style="margin:0 0 4px 0">'+E(x.reasoning||"")+'</p>'
-          + criteriaHtml(x)
-          + evidenceHtml(x)
-          + gapsHtml(x)
-          + actionHtml(x); }).join("")
-    + (r.adviserSuggestion ? '<h2 style="color:#2E75B6">3. Observations &amp; coaching</h2>'+obsHtml(r.adviserSuggestion) : '')
-    + '<h2 style="color:#2E75B6">'+(r.adviserSuggestion?'4':'3')+'. Outcome &amp; next steps</h2>'
-    + '<p><b>Outcome:</b> '+E(r.summary||"")+'<br><b>Routing:</b> '+E(route)+'.</p>'
+    + (r.adviserSuggestion ? '<h2 style="color:#202040">Observations &amp; coaching</h2>'+obsHtml(r.adviserSuggestion) : '')
+    + '<h2 style="color:#202040">Outcome &amp; next steps</h2>'
+    + '<p><b>Outcome:</b> '+E(summaryText)+'<br><b>Routing:</b> '+E(route)+'.</p>'
     + '<p style="color:#666;font-size:9pt;margin-top:22px">SARA is an AI compliance assistant. This pre-vet is a first-pass aid and does not replace adviser judgement or compliance sign-off.</p>'
+    + '<br clear="all" style="page-break-before:always;mso-break-type:section-break" />'
+    + '<h2 style="color:#202040;margin-top:0">1. Regulatory assessment — summary</h2>'
+    + '<p>This table summarises the result of each compliance check. Detailed basis, evidence, gaps and recommended next actions follow in section 2.</p>'
+    + '<table style="border-collapse:collapse;width:100%"><tr><td '+tdh+'>#</td><td '+tdh+'>Compliance area</td><td '+tdh+'>Outcome</td><td '+tdh+'>Key finding / issue</td></tr>'
+    + F.map((x,i)=>{ const s=splitBasis(x.question); return '<tr><td '+td+'>'+E(x.testId || String(i+1))+'</td><td '+td+'>'+E(s.q)+'</td><td style="border:1px solid #bbb;padding:6px">'+outcomeLink(x,i)+'</td><td '+td+'>'+E(keyIssue(x))+'</td></tr>'; }).join("")
+    + '</table>'
+    + '<br clear="all" style="page-break-before:always;mso-break-type:section-break" />'
+    + '<h2 style="color:#202040;margin-top:0">2. Regulatory assessment — detail</h2>'
+    + '<p>For each check, SARA records the audit question, regulatory reference, assessment, evidence relied on, residual gaps and recommended next action.</p>'
+    + '<table style="border-collapse:collapse;width:100%"><tr>'
+      + '<td '+tdh+'>#</td><td '+tdh+'>Audit question</td><td '+tdh+'>Regulatory reference</td><td '+tdh+'>Outcome</td><td '+tdh+'>Finding detail</td></tr>'
+    + F.map((x,i)=>{ const s=splitBasis(x.question);
+        return '<tr style="page-break-inside:avoid">'
+          + '<td '+td+'><a name="'+findingAnchor(x,i)+'"></a>'+E(x.testId || `2.${i+1}`)+'</td>'
+          + '<td '+td+'><b>'+E(s.q)+'</b></td>'
+          + '<td '+td+'>'+E(s.basis)+'</td>'
+          + '<td style="border:1px solid #bbb;padding:6px;color:'+col(x.outcome)+';font-weight:bold;vertical-align:top">'+E(x.outcome)+'</td>'
+          + '<td '+td+'>'+detailCellHtml(x)+'</td>'
+          + '</tr>'; }).join("")
+    + '</table>'
     + '</body></html>';
 
   const blob = new Blob(['﻿'+html], {type:"application/msword"});
   const url = URL.createObjectURL(blob);
   const a = document.createElement("a");
   a.href = url;
-  a.download = "SARA2_"+role+"_prevet_"+new Date().toISOString().slice(0,10)+".doc";
+  a.download = options.filename || "SARA2_"+reportRole+"_prevet_"+new Date().toISOString().slice(0,10)+".doc";
   document.body.appendChild(a); a.click(); document.body.removeChild(a);
   URL.revokeObjectURL(url);
   toast("Word file downloaded.");
+}
+
+document.getElementById("exportWord").onclick = ()=>{
+  if(!lastResult){ toast("Run a pre-vet first."); return; }
+  downloadSaraReportDocument(lastResult, {
+    role,
+    reportContext: buildReportContext(),
+    filename: "SARA2_"+role+"_prevet_"+new Date().toISOString().slice(0,10)+".doc"
+  });
 };
 
 let toastT;
@@ -3005,6 +3349,7 @@ function showResultRoute(reviewId){
     role = cached.role || role;
     lastMeta = cached.meta || null;
     activeCreatedReview = cached.review || {id: reviewId};
+    lastReportContext = cached.reportContext || null;
     renderAll();
     renderResult(cached.result, {skipPathUpdate:true, reviewId});
     return;
@@ -3288,7 +3633,7 @@ document.getElementById("reviewsTableBody").addEventListener("change", async e=>
   }
   const previousStatus = review.status || "Not started";
   const nextStatus = displayReviewStatus(select.value);
-  select.classList.remove("done", "requires-review", "aborted");
+  select.classList.remove("pass", "review", "fail", "done", "requires-review", "aborted");
   select.classList.add(statusClass(nextStatus));
   select.disabled = true;
   try{
@@ -3297,7 +3642,7 @@ document.getElementById("reviewsTableBody").addEventListener("change", async e=>
   }catch(error){
     console.warn("SARA review status update failed", error);
     select.value = previousStatus;
-    select.classList.remove("done", "requires-review", "aborted");
+    select.classList.remove("pass", "review", "fail", "done", "requires-review", "aborted");
     select.classList.add(statusClass(previousStatus));
     toast(error.message);
   }finally{

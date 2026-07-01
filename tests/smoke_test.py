@@ -428,6 +428,12 @@ def smoke_flask_entrypoint():
                     "licenseeName": "Smoke Licensee",
                     "practiceName": "Smoke Practice",
                     "clientName": "Smoke Client",
+                    "conversations[0].promptId": "SOA-01",
+                    "conversations[0].promptIndex": "1",
+                    "conversations[0].auditQuestion": "Smoke audit question",
+                    "conversations[0].promptRegRef": "s961B",
+                    "conversations[0].content": "Smoke finding content",
+                    "conversations[0].passfail": "Review",
                     "files": (io.BytesIO(b"smoke document"), "smoke-soa.txt"),
                 },
                 headers={"Authorization": "Bearer smoke-token"},
@@ -522,6 +528,11 @@ def smoke_flask_entrypoint():
                 "SOA-01 - 1 - Summary of the Advice" in create_body,
                 True,
                 "flask create review default prompt",
+            )
+            assert_equal(
+                'name="conversations[0].content"' in create_body and "Smoke finding content" in create_body,
+                True,
+                "flask create review conversations passthrough",
             )
             assert_equal(
                 'name="adviser"\r\n\r\nSmoke User' in create_body,

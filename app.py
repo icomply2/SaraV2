@@ -698,6 +698,12 @@ def sara_create_review():
     for prompt in prompts:
         fields.append(("Prompts", prompt))
 
+    for key in form.keys():
+        lower_key = key.lower()
+        if lower_key.startswith("conversations[") or lower_key.startswith("conversations."):
+            for value in form.getlist(key):
+                fields.append((key, value))
+
     upload_files = []
     for uploaded in request.files.getlist("files"):
         upload_files.append(
