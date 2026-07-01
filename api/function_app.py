@@ -9,6 +9,7 @@ import uuid
 
 import azure.functions as func
 
+from check_catalog import get_checks
 from sara_engine import run_prevet
 
 app = func.FunctionApp(http_auth_level=func.AuthLevel.FUNCTION)
@@ -21,7 +22,7 @@ PREVET_ERROR_MESSAGE = (
 _CORS = {
     "Access-Control-Allow-Origin": os.environ.get("SARA_ALLOWED_ORIGIN", "*"),
     "Access-Control-Allow-Headers": "Content-Type, x-functions-key",
-    "Access-Control-Allow-Methods": "POST, OPTIONS",
+    "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
 }
 
 
@@ -70,3 +71,11 @@ def soa_prevet(req: func.HttpRequest) -> func.HttpResponse:
 @app.route(route="roa/prevet", methods=["POST", "OPTIONS"])
 def roa_prevet(req: func.HttpRequest) -> func.HttpResponse:
     return _handle("roa", req)
+
+
+@app.route(route="sara/checks", methods=["GET", "OPTIONS"])
+def sara_checks(req: func.HttpRequest) -> func.HttpResponse:
+    if req.method == "OPTIONS":
+        return func.HttpResponse(status_code=204, headers=_CORS)
+    review_type = req.params.get("reviewType") or req.params.get("review_type")
+    return _json({"data": get_checks(review_type), "status": True})

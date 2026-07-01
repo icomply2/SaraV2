@@ -110,6 +110,19 @@
   .review-toolbar input,.review-toolbar select{
     min-width:0;height:40px;border:1px solid #cfd2dc;border-radius:4px;background:#fff;color:var(--login);padding:0 12px;
   }
+  .settings-toolbar{grid-template-columns:repeat(3,minmax(0,1fr));margin-bottom:12px}
+  .settings-table-wrap{overflow:auto;border-radius:7px}
+  .settings-table{min-width:1120px}
+  .settings-table td{vertical-align:top}
+  .settings-table .settings-question{
+    max-width:300px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+  }
+  .settings-table .settings-title{
+    max-width:210px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+  }
+  .settings-meta{
+    color:var(--muted);font-size:13px;margin:0 0 14px;
+  }
   .review-table{width:100%;border-collapse:separate;border-spacing:0 10px;font-size:13px}
   .review-table th{
     background:var(--login);color:#fff;text-align:left;padding:14px 18px;font-size:12px;font-weight:800;
@@ -309,6 +322,14 @@
   .chip.Fail{background:var(--fail-bg);color:#b91c1c;border:1px solid #fecaca}
   .finding .why{margin:9px 0 0;font-size:13px;color:var(--muted)}
   .finding .ev{margin:7px 0 0;font-size:12px;color:var(--faint);border-left:2px solid var(--line);padding-left:9px;word-break:break-word}
+  .finding-detail{margin-top:10px;display:grid;gap:8px}
+  .finding-block{border:1px solid var(--line);background:var(--panel);border-radius:8px;padding:9px 10px}
+  .finding-block b{display:block;font-size:12px;color:var(--ink);margin-bottom:5px}
+  .criteria-list,.evidence-list,.gap-list{margin:0;padding:0;list-style:none;display:grid;gap:5px}
+  .criteria-list li,.evidence-list li,.gap-list li{font-size:12px;color:var(--muted);line-height:1.45}
+  .criteria-list .finding-tag{display:inline-block;margin-right:6px;padding:1px 6px;border-radius:999px;background:#eef2f7;color:var(--ink);font-size:10px;font-weight:700;text-transform:uppercase}
+  .evidence-list q{color:var(--ink);font-weight:600}
+  .recommended-action{font-size:12px;color:var(--muted);line-height:1.45}
 
   .coaching{background:var(--brand-soft);border:1px solid #d7d9e1;border-radius:10px;padding:14px;margin-top:14px;font-size:13px;white-space:pre-wrap}
   .coaching b{color:var(--brand-2)}
@@ -346,6 +367,10 @@
       <button class="icon-action" id="profileBtn" type="button" title="User profile">
         <span class="profile-dot">A</span>
         <span>Me</span>
+      </button>
+      <button class="icon-action" id="settingsBtn" type="button" title="SARA settings">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 15.5a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7Z"/><path d="M19.4 15a1.8 1.8 0 0 0 .36 1.98l.06.06a2.1 2.1 0 0 1-2.97 2.97l-.06-.06a1.8 1.8 0 0 0-1.98-.36 1.8 1.8 0 0 0-1.09 1.65V21.4a2.1 2.1 0 0 1-4.2 0v-.09a1.8 1.8 0 0 0-1.08-1.65 1.8 1.8 0 0 0-1.99.36l-.06.06a2.1 2.1 0 0 1-2.97-2.97l.06-.06A1.8 1.8 0 0 0 4.6 15a1.8 1.8 0 0 0-1.65-1.09H2.8a2.1 2.1 0 0 1 0-4.2h.09A1.8 1.8 0 0 0 4.54 8.6a1.8 1.8 0 0 0-.36-1.98l-.06-.06a2.1 2.1 0 0 1 2.97-2.97l.06.06a1.8 1.8 0 0 0 1.98.36A1.8 1.8 0 0 0 10.22 2.4V2.2a2.1 2.1 0 0 1 4.2 0v.09a1.8 1.8 0 0 0 1.08 1.65 1.8 1.8 0 0 0 1.99-.36l.06-.06a2.1 2.1 0 0 1 2.97 2.97l-.06.06a1.8 1.8 0 0 0-.36 1.98 1.8 1.8 0 0 0 1.65 1.09h.09a2.1 2.1 0 0 1 0 4.2h-.09A1.8 1.8 0 0 0 19.4 15Z"/></svg>
+        <span>Settings</span>
       </button>
       <button class="icon-action" id="logoutBtn" type="button" title="Log out">
         <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><path d="M16 17l5-5-5-5"/><path d="M21 12H9"/></svg>
@@ -449,6 +474,33 @@
             <span id="observationsPageInfo">Page 1 of 1</span>
             <button class="pager-btn" id="observationsNextPage" type="button">Next</button>
           </div>
+        </div>
+      </section>
+
+      <section class="view" id="settingsView" hidden>
+        <div class="section-title">SARA Settings</div>
+        <p class="settings-meta">Read-only SOA Pre-Vet compliance check catalogue.</p>
+        <div class="review-toolbar settings-toolbar">
+          <select id="settingsReviewTypeFilter"><option value="">Review Type</option></select>
+          <select id="settingsAdviceTypeFilter"><option value="">Advice Type</option></select>
+          <select id="settingsInclusionFilter"><option value="">SOA Inclusion</option></select>
+        </div>
+        <div class="settings-table-wrap">
+          <table class="review-table settings-table" aria-label="SARA compliance checks">
+            <thead>
+              <tr>
+                <th>Index</th>
+                <th>Title</th>
+                <th>Review Type</th>
+                <th>Advice Type</th>
+                <th>SOA Inclusion</th>
+                <th>Required Documents</th>
+                <th>Severity</th>
+                <th>Audit Question</th>
+              </tr>
+            </thead>
+            <tbody id="settingsChecksTableBody"></tbody>
+          </table>
         </div>
       </section>
 
@@ -654,6 +706,7 @@ const AUTH_EMAIL_KEY = "saraLoginEmail";
 const AUTH_PROFILE_KEY = "saraUserProfile";
 const DASHBOARD_PATH = "/dashboard";
 const UPLOAD_PATH = "/upload";
+const SETTINGS_PATH = "/settings";
 const RESULT_PATH_PREFIX = "/result/";
 const RESULT_CACHE_PREFIX = "saraReviewResult:";
 
@@ -736,6 +789,264 @@ const COMPLIANCE_PROMPTS = {
   ]
 };
 
+const SOA_PREVET_CHECK_SCHEMA = [
+  {
+    index: 1,
+    testId: "SOA-01",
+    title: "1 - Summary of the Advice",
+    reviewType: "SOA Pre-Vet",
+    saraChecks: {name: "", type: ["Retail/Personal Advice"], checklistType: ""},
+    requiredDocuments: ["soa_vetted"],
+    severity: "mandatory",
+    regulatoryReference: "Summary of the Advice",
+    auditQuestion: "Summary of the Advice",
+    message: "Summarise the Statement of Advice under objectives, scope, strategy recommendations, product recommendations, insurance recommendations where applicable, and disclosure.",
+    passCriteria: "The SOA can be summarised clearly across objectives, scope, strategy recommendations, product recommendations, insurance recommendations where applicable, and fee/disclosure sections.",
+    reviewCriteria: "The SOA contains some relevant sections but the summary is incomplete, unclear, internally inconsistent, or key advice areas require human confirmation.",
+    failCriteria: "The SOA is missing core advice content or cannot be reliably summarised from the document provided."
+  },
+  {
+    index: 2,
+    testId: "SOA-02",
+    title: "2 - Objectives",
+    reviewType: "SOA Pre-Vet",
+    saraChecks: {name: "", type: ["Retail/Personal Advice"], checklistType: ""},
+    requiredDocuments: ["soa_vetted"],
+    severity: "mandatory",
+    regulatoryReference: "Identifying customer's objectives: s961B(2)(a)",
+    auditQuestion: "Did the adviser adequately identify the objectives of the customer? Did the customer file pass or fail this step? Why/Why not?",
+    message: "Check whether the SOA identifies the client's objectives disclosed through instructions, including whether objectives are specific, measurable, prioritised and client-relevant.",
+    passCriteria: "The SOA identifies the client's objectives in specific, measurable and client-relevant terms, preferably in the client's own words or with clear context.",
+    reviewCriteria: "Objectives are present but generic, not prioritised, not measurable, or only partly connected to the advice.",
+    failCriteria: "The SOA does not identify the client's objectives, or the stated objectives are too generic to support the advice."
+  },
+  {
+    index: 3,
+    testId: "SOA-03",
+    title: "3 - Financial Situation",
+    reviewType: "SOA Pre-Vet",
+    saraChecks: {name: "", type: ["Retail/Personal Advice"], checklistType: "Fact Find"},
+    requiredDocuments: ["soa_vetted"],
+    severity: "mandatory",
+    regulatoryReference: "Identifying customer's financial situation and needs: s961B(2)(a)",
+    auditQuestion: "Did the adviser identify the financial situation and needs of the customer? Did the customer file pass or fail this step? Why/Why not?",
+    message: "Check personal circumstances, occupation, health, income, expenses, cashflow, assets, liabilities, superannuation, pensions, insurance and needs.",
+    passCriteria: "The SOA identifies relevant personal circumstances, income, expenses, assets, liabilities, cashflow, superannuation, pensions, insurance and needs sufficient to support the advice.",
+    reviewCriteria: "Some financial information is provided but key details are incomplete, stale, inconsistent, or need confirmation.",
+    failCriteria: "The SOA does not adequately identify the client's financial situation and needs."
+  },
+  {
+    index: 4,
+    testId: "SOA-04",
+    title: "4 - Risk Profile",
+    reviewType: "SOA Pre-Vet",
+    saraChecks: {name: "", type: ["Retail/Personal Advice"], checklistType: "Risk Profile Questionnaire"},
+    requiredDocuments: ["soa_vetted"],
+    severity: "mandatory",
+    regulatoryReference: "Identifying customer's risk profile: s961B(2)(a)",
+    auditQuestion: "Has the adviser identified the clients risk profile? Did the customer file pass or fail this step? Why/Why not?",
+    message: "Check whether the SOA identifies the client's risk profile and whether it is appropriate for the client's circumstances, assets, income and timeframe.",
+    passCriteria: "The SOA identifies the client's risk profile and the profile appears appropriate having regard to age, assets, income, investment timeframe and circumstances.",
+    reviewCriteria: "A risk profile is stated but the basis or appropriateness is unclear.",
+    failCriteria: "No risk profile is identified, or the profile appears materially inconsistent with the client's circumstances."
+  },
+  {
+    index: 5,
+    testId: "SOA-05",
+    title: "5 - Subject Matter",
+    reviewType: "SOA Pre-Vet",
+    saraChecks: {name: "", type: ["Retail/Personal Advice"], checklistType: ""},
+    requiredDocuments: ["soa_vetted"],
+    severity: "mandatory",
+    regulatoryReference: "Identifying the subject matter and scope of the advice sought by customer's: s961B(2)(b)(i)",
+    auditQuestion: "Did the adviser identify the subject matter of the advice sought by the client? Did the customer file pass or fail this step? Why/Why not?",
+    message: "Check the agreed scope of advice, any limitations, why limitations were applied, and whether all recommendations stay within scope.",
+    passCriteria: "The SOA clearly identifies the subject matter and scope of advice, any limitations, and recommendations stay within that scope.",
+    reviewCriteria: "Scope is present but limitations, exclusions or recommendation boundaries are unclear.",
+    failCriteria: "The SOA does not identify scope, or recommendations appear outside the agreed scope."
+  },
+  {
+    index: 6,
+    testId: "SOA-06",
+    title: "6 - Open a Self Managed Super Fund",
+    reviewType: "SOA Pre-Vet",
+    saraChecks: {name: "Opening a Self Managed Super Fund", type: ["Retail/Personal Advice", "Wholesale Client Advice"], checklistType: ""},
+    requiredDocuments: ["soa_vetted"],
+    severity: "mandatory",
+    regulatoryReference: "Opening a SMSF s961B(2)(f)",
+    auditQuestion: "Where a financial adviser makes a recommendation to open a self-managed super fund, does the Statement of Advice clearly explain how the SMSF is appropriate for the client? Did the customer file pass or fail this step? Why/Why not?",
+    message: "If SMSF establishment is recommended, check suitability, balance and cost effectiveness, trustee duties, client capability, diversification, and any LRBA/gearing implications.",
+    passCriteria: "If SMSF establishment is recommended, the SOA explains suitability, trustee duties, cost effectiveness, client capability, diversification and any LRBA/gearing implications. If no SMSF advice is given, this is not applicable.",
+    reviewCriteria: "SMSF advice is present but suitability, trustee obligations, costs, diversification or LRBA matters require human confirmation.",
+    failCriteria: "SMSF establishment is recommended without adequate evidence that it is appropriate for the client."
+  },
+  {
+    index: 7,
+    testId: "SOA-07",
+    title: "7 - Gearing Advice",
+    reviewType: "SOA Pre-Vet",
+    saraChecks: {name: "Gearing Advice incl LRBA", type: ["Retail/Personal Advice", "Wholesale Client Advice"], checklistType: ""},
+    requiredDocuments: ["soa_vetted"],
+    severity: "mandatory",
+    regulatoryReference: "Appropriate Gearing Advice s961B(2)(f)",
+    auditQuestion: "Where a financial adviser has provided gearing advice, does the Statement of Advice clearly explain how the gearing advice is appropriate for the client? Did the customer file pass or fail this step? Why/Why not?",
+    message: "If gearing is recommended, check LVR, risk profile, contingency plan, cashflow serviceability, interest-rate stress, insurance considerations and ongoing advice.",
+    passCriteria: "If gearing is recommended, the SOA addresses LVR, risk profile, contingency planning, cashflow serviceability, insurance considerations and ongoing advice. If no gearing advice is given, this is not applicable.",
+    reviewCriteria: "Gearing advice is present but one or more suitability factors are unclear or need confirmation.",
+    failCriteria: "Gearing is recommended without adequate evidence of suitability, serviceability, risk alignment or risk mitigation."
+  },
+  {
+    index: 8,
+    testId: "SOA-08",
+    title: "8 - Product Recommendation",
+    reviewType: "SOA Pre-Vet",
+    saraChecks: {name: "Product Recommendations", type: ["Retail/Personal Advice", "Wholesale Client Advice"], checklistType: ""},
+    requiredDocuments: ["soa_vetted"],
+    severity: "mandatory",
+    regulatoryReference: "Recommending a financial product: s961B(2)(e)",
+    auditQuestion: "Where a financial product is recommended, does the Statement of Advice clearly explain how the product meets the client objective? Did the customer file pass or fail this step? Why/Why not?",
+    message: "Where a superannuation or investment product is recommended, check whether it is reasonable and whether the SOA explains how it meets the client's objectives and needs.",
+    passCriteria: "Where a superannuation or investment product is recommended, the SOA clearly explains why the product is suitable and how it meets the client's objectives and needs.",
+    reviewCriteria: "A product recommendation is made but the link to objectives, needs or suitability is incomplete or generic.",
+    failCriteria: "A product is recommended without a clear explanation of why it is suitable for the client."
+  },
+  {
+    index: 9,
+    testId: "SOA-09",
+    title: "9 - Investment Replacement",
+    reviewType: "SOA Pre-Vet",
+    saraChecks: {name: "Product Replacement", type: ["Retail/Personal Advice", "Wholesale Client Advice"], checklistType: ""},
+    requiredDocuments: ["soa_vetted"],
+    severity: "mandatory",
+    regulatoryReference: "Making a recommendation to replace a financial product: s961B(2)(e)",
+    auditQuestion: "Has the adviser made an appropriate recommendation to replace or rollover a financial product? Did the customer file pass or fail this step? Why/Why not?",
+    message: "If a superannuation or investment product is replaced, check consideration of the existing product, suitability of the recommended product, fee comparison, fee impact and alternatives considered.",
+    passCriteria: "If a product is replaced or rolled over, the SOA compares existing, recommended and alternative products, explains costs and benefits, and justifies the replacement. If no replacement occurs, this is not applicable.",
+    reviewCriteria: "Replacement advice is present but comparison, fee impact, alternatives or client benefit requires confirmation.",
+    failCriteria: "Replacement advice is given without adequate comparison or justification."
+  },
+  {
+    index: 10,
+    testId: "SOA-10",
+    title: "10 - Investment Portfolio",
+    reviewType: "SOA Pre-Vet",
+    saraChecks: {name: "Investment Portfolio", type: ["Retail/Personal Advice", "Wholesale Client Advice"], checklistType: ""},
+    requiredDocuments: ["soa_vetted"],
+    severity: "mandatory",
+    regulatoryReference: "Recommending a financial product - Investment Portfolio Recommendations: s961B(2)(e)",
+    auditQuestion: "Where an investment portfolio is recommended, does the asset allocation meet the risk profile? Did the customer file pass or fail this step? Why/Why not?",
+    message: "If investment portfolio transactions are recommended, check the transaction summary, risk-profile alignment and whether any asset allocation variance is adequately explained.",
+    passCriteria: "Where an investment portfolio is recommended, the asset allocation aligns with the client's risk profile or any variance is adequately explained.",
+    reviewCriteria: "Portfolio advice is present but asset allocation, risk alignment or variance explanation is unclear.",
+    failCriteria: "The recommended portfolio is materially inconsistent with the client's risk profile and no adequate explanation is provided."
+  },
+  {
+    index: 11,
+    testId: "SOA-11",
+    title: "11 - Adviser Judgement",
+    reviewType: "SOA Pre-Vet",
+    saraChecks: {name: "", type: ["Retail/Personal Advice"], checklistType: ""},
+    requiredDocuments: ["soa_vetted"],
+    severity: "mandatory",
+    regulatoryReference: "All judgements are based on customer's relevant circumstances: s961B(2)(f)",
+    auditQuestion: "Has the adviser based all judgements made, in advising the customer, on the customer’s relevant circumstances? Did the customer file pass or fail this step? Why/Why not?",
+    message: "Summarise the strategic recommendations and check whether each recommendation, consequence and alternative strategy is based on the client's relevant circumstances.",
+    passCriteria: "The SOA shows the adviser's judgements are based on the client's relevant circumstances and the client is likely to be in a better position if they follow the advice.",
+    reviewCriteria: "The advice may be suitable but the reasoning, consequences or alternatives are incomplete or unclear.",
+    failCriteria: "The advice does not clearly reflect the client's relevant circumstances or appears mismatched to their objectives."
+  },
+  {
+    index: 12,
+    testId: "SOA-12",
+    title: "12 - Needs Analysis",
+    reviewType: "SOA Pre-Vet",
+    saraChecks: {name: "Insurance", type: ["Retail/Personal Advice", "Wholesale Client Advice"], checklistType: ""},
+    requiredDocuments: ["soa_vetted"],
+    severity: "mandatory",
+    regulatoryReference: "Recommending a financial product - life insurance needs analysis: s961B(2)(e)",
+    auditQuestion: "Has the adviser completed a needs analysis? Did the customer file pass or fail this step?",
+    message: "Where insurance is recommended, check whether a needs analysis calculates appropriate cover or whether the client validly declined and the advice scoped it out.",
+    passCriteria: "Where insurance is recommended, the SOA includes a needs analysis or validly scopes it out where declined. If no insurance advice is given, this is not applicable.",
+    reviewCriteria: "Insurance advice is present but the needs analysis, cover basis or scoping is incomplete or unclear.",
+    failCriteria: "Insurance is recommended without a needs analysis or valid scope limitation."
+  },
+  {
+    index: 13,
+    testId: "SOA-13",
+    title: "13 - Insurance Replacement",
+    reviewType: "SOA Pre-Vet",
+    saraChecks: {name: "Insurance Product Replacement", type: ["Retail/Personal Advice", "Wholesale Client Advice"], checklistType: ""},
+    requiredDocuments: ["soa_vetted"],
+    severity: "mandatory",
+    regulatoryReference: "Making a recommendation to replace a life insurance product: s961B(2)(e)",
+    auditQuestion: "Has the adviser made a recommendation to replace a life insurance product? Did the customer file pass or fail this step? Why/Why not?",
+    message: "If life insurance is replaced, check why the existing product is unsuitable, whether replacement satisfies objectives, premium/features comparison and alternative insurers considered.",
+    passCriteria: "If insurance is replaced, the SOA explains why the existing product is unsuitable, compares premiums/features, considers alternatives, and links replacement to client objectives. If no replacement occurs, this is not applicable.",
+    reviewCriteria: "Insurance replacement advice is present but comparison, premium impact or alternatives require confirmation.",
+    failCriteria: "Insurance replacement is recommended without adequate comparison or justification."
+  },
+  {
+    index: 14,
+    testId: "SOA-14",
+    title: "14 - Fee Disclosure",
+    reviewType: "SOA Pre-Vet",
+    saraChecks: {name: "", type: ["Retail/Personal Advice"], checklistType: ""},
+    requiredDocuments: ["soa_vetted"],
+    severity: "mandatory",
+    regulatoryReference: "Information about fee disclosure and any remuneration or commission: s947B (2) (d)",
+    auditQuestion: "Has the adviser provided appropriate disclosure of fees payable and any remuneration received? Did the customer file pass or fail this step?",
+    message: "Check preparation, implementation, ongoing, product and insurance commission fees, sole purpose issues and informed insurance consent where relevant.",
+    passCriteria: "The SOA discloses advice, implementation, ongoing, product and insurance commission fees where applicable, and addresses sole purpose and informed insurance consent issues where relevant.",
+    reviewCriteria: "Fees are disclosed but some amounts, payment sources, commissions, consent or sole purpose issues require confirmation.",
+    failCriteria: "Material fees, remuneration, commissions or required consent disclosures are missing."
+  },
+  {
+    index: 15,
+    testId: "SOA-15",
+    title: "15 - Fee Agreements",
+    reviewType: "SOA Pre-Vet",
+    saraChecks: {name: "Ongoing/Annual Agreement", type: ["Retail/Personal Advice", "Wholesale Client Advice"], checklistType: ""},
+    requiredDocuments: ["soa_vetted"],
+    severity: "mandatory",
+    regulatoryReference: "Information about fee agreements: s962",
+    auditQuestion: "Has the adviser provided the client with an ongoing or annual fee agreement? Did the customer file pass or fail this step?",
+    message: "If an ongoing or annual fee arrangement is recommended, check the agreement, services, fees, payment source, fee consent and reference date requirements.",
+    passCriteria: "Where an ongoing or annual fee arrangement is recommended, the SOA identifies the agreement, services, fees, payment source, consent and reference date requirements. If no arrangement is recommended, this is not applicable.",
+    reviewCriteria: "A fee arrangement is present but service, fee, consent, deduction or reference date details need confirmation.",
+    failCriteria: "An ongoing or annual fee arrangement is recommended without the required agreement or consent details."
+  },
+  {
+    index: 16,
+    testId: "SOA-16",
+    title: "16 - Product Disclosure Statement",
+    reviewType: "SOA Pre-Vet",
+    saraChecks: {name: "Product Disclosure Statement", type: ["Retail/Personal Advice"], checklistType: ""},
+    requiredDocuments: ["soa_vetted"],
+    severity: "mandatory",
+    regulatoryReference: "Product disclosure obligations",
+    auditQuestion: "Has the adviser provided or referenced the relevant Product Disclosure Statement for recommended products?",
+    message: "Where a financial product is recommended, check whether the SOA provides or references the relevant Product Disclosure Statement or disclosure document.",
+    passCriteria: "Where a product is recommended, the SOA provides or clearly references the relevant PDS or disclosure document. If no product is recommended, this is not applicable.",
+    reviewCriteria: "A product is recommended but the PDS reference or disclosure evidence is unclear or incomplete.",
+    failCriteria: "A product is recommended and there is no evidence that the relevant PDS or disclosure document was provided or referenced."
+  },
+  {
+    index: 17,
+    testId: "SOA-17",
+    title: "17 - Credit Advice",
+    reviewType: "SOA Pre-Vet",
+    saraChecks: {name: "Credit Advice", type: ["Retail/Personal Advice"], checklistType: ""},
+    requiredDocuments: ["soa_vetted"],
+    severity: "mandatory",
+    regulatoryReference: "NCCP Act 2009",
+    auditQuestion: "Does the SOA avoid unlicensed credit advice?",
+    message: "Review whether the SOA includes credit assistance or credit product recommendations without appropriate authority or scope limitation.",
+    passCriteria: "The SOA does not provide regulated credit assistance, or credit matters are clearly scoped out/background only.",
+    reviewCriteria: "The SOA mentions credit, lending, refinancing or loan strategies and it is unclear whether this crosses into regulated credit advice.",
+    failCriteria: "The SOA appears to recommend, arrange or provide credit assistance without clear authority or appropriate scoping."
+  }
+];
+
 // ---------- State ----------
 let role = "soa";
 let files = []; // {id,file,type,text}
@@ -758,6 +1069,9 @@ let observationsLoaded = false;
 const observationsPagination = { page: 1, pageSize: 10, filteredCount: 0 };
 const observationFilters = { search: "", status: "", adviserName: "", practiceName: "" };
 let activeObservationsLicenseeName = "";
+const settingsFilters = { reviewType: "", adviceType: "", soaInclusion: "" };
+let settingsCheckSchema = SOA_PREVET_CHECK_SCHEMA.slice();
+let settingsChecksLoaded = false;
 let selectedReviewClient = null;
 let clientSearchRows = [];
 let adviserOptions = [];
@@ -850,6 +1164,93 @@ function setFilterOptions(selectId, placeholder, values, currentValue){
   select.innerHTML = options.join("");
   select.value = nextValue;
   return nextValue;
+}
+
+function listText(value){
+  if (Array.isArray(value)) return value.filter(Boolean).join(", ");
+  return String(value || "");
+}
+
+function settingAdviceTypes(check){
+  return check.saraChecks && Array.isArray(check.saraChecks.type) ? check.saraChecks.type : [];
+}
+
+function settingInclusion(check){
+  return (check.saraChecks && (check.saraChecks.name || check.saraChecks.checklistType)) || "";
+}
+
+function settingMatchesFilters(check){
+  if (settingsFilters.reviewType && check.reviewType !== settingsFilters.reviewType) return false;
+  if (settingsFilters.adviceType && !settingAdviceTypes(check).includes(settingsFilters.adviceType)) return false;
+  if (settingsFilters.soaInclusion && settingInclusion(check) !== settingsFilters.soaInclusion) return false;
+  return true;
+}
+
+function populateSettingsFilters(){
+  settingsFilters.reviewType = setFilterOptions(
+    "settingsReviewTypeFilter",
+    "Review Type",
+    settingsCheckSchema.map(c=>c.reviewType),
+    settingsFilters.reviewType
+  );
+  settingsFilters.adviceType = setFilterOptions(
+    "settingsAdviceTypeFilter",
+    "Advice Type",
+    settingsCheckSchema.flatMap(settingAdviceTypes),
+    settingsFilters.adviceType
+  );
+  settingsFilters.soaInclusion = setFilterOptions(
+    "settingsInclusionFilter",
+    "SOA Inclusion",
+    settingsCheckSchema.map(settingInclusion),
+    settingsFilters.soaInclusion
+  );
+}
+
+function renderSettingsChecks(){
+  const body = document.getElementById("settingsChecksTableBody");
+  const rows = settingsCheckSchema
+    .slice()
+    .sort((a,b)=>a.index - b.index)
+    .filter(settingMatchesFilters);
+  if (!rows.length){
+    body.innerHTML = `<tr><td colspan="8">No checks found.</td></tr>`;
+    return;
+  }
+  body.innerHTML = rows.map(check => `
+    <tr title="${escapeHtml(check.passCriteria || "")}">
+      <td>${escapeHtml(check.index)}</td>
+      <td class="settings-title">${escapeHtml(check.title)}</td>
+      <td>${escapeHtml(check.reviewType)}</td>
+      <td>${escapeHtml(listText(settingAdviceTypes(check)))}</td>
+      <td>${escapeHtml(settingInclusion(check) || "-")}</td>
+      <td>${escapeHtml(listText(check.requiredDocuments))}</td>
+      <td>${escapeHtml(check.severity)}</td>
+      <td class="settings-question">${escapeHtml(check.auditQuestion)}</td>
+    </tr>
+  `).join("");
+}
+
+async function loadSettingsChecks(force=false){
+  if (settingsChecksLoaded && !force) return settingsCheckSchema;
+  try{
+    const res = await fetch("/api/sara/checks?reviewType=SOA%20Pre-Vet", {
+      headers: authHeaders()
+    });
+    if (!res.ok) throw new Error("Could not load SARA checks.");
+    const payload = await res.json().catch(()=>({}));
+    const data = payload.data || payload.Data || payload.checks || payload.Checks || [];
+    if (!Array.isArray(data) || !data.length) throw new Error("SARA checks response was empty.");
+    settingsCheckSchema = data.slice().sort((a,b)=>(Number(a.index) || 0) - (Number(b.index) || 0));
+    settingsChecksLoaded = true;
+  }catch(err){
+    console.warn("Using inline SARA checks fallback", err);
+    settingsCheckSchema = SOA_PREVET_CHECK_SCHEMA.slice();
+    settingsChecksLoaded = false;
+  }
+  populateSettingsFilters();
+  renderSettingsChecks();
+  return settingsCheckSchema;
 }
 
 function populateReviewFilters(){
@@ -1002,6 +1403,62 @@ function normalizeObservation(item){
   };
 }
 
+const creatorNameCache = {};
+
+function looksLikeUserId(value){
+  const text = String(value || "").trim();
+  if (!text || text.includes("@") || /\s/.test(text)) return false;
+  return text.length > 20 || /^[0-9]+x[0-9]+$/.test(text) || /^[0-9a-f]{8}-[0-9a-f-]{27,}$/i.test(text);
+}
+
+function userObjectFromPayload(payload){
+  const data = payload && (payload.data || payload.Data || payload);
+  if (data && typeof data === "object"){
+    return data.user || data.User || data.profile || data.Profile || data.userProfile || data.UserProfile || data;
+  }
+  return {};
+}
+
+async function resolveUserDisplayName(userId){
+  userId = String(userId || "").trim();
+  if (!looksLikeUserId(userId)) return "";
+  if (Object.prototype.hasOwnProperty.call(creatorNameCache, userId)){
+    const cached = creatorNameCache[userId];
+    return cached && typeof cached.then === "function" ? await cached : cached;
+  }
+  creatorNameCache[userId] = (async ()=>{
+    try{
+      const res = await fetch(`/api/sara/users/${encodeURIComponent(userId)}`, {headers: authHeaders()});
+      const payload = await res.json().catch(()=>({}));
+      if (!res.ok || payload.status === false || payload.Status === false) return "";
+      const user = userObjectFromPayload(payload);
+      const name = objectName(user) || [user.firstName || user.FirstName, user.lastName || user.LastName].filter(Boolean).join(" ");
+      return name || "";
+    }catch(e){
+      console.warn("created-by user lookup failed", userId, e);
+      return "";
+    }
+  })();
+  const resolved = await creatorNameCache[userId];
+  creatorNameCache[userId] = resolved;
+  return resolved;
+}
+
+async function enrichCreatorNames(rows){
+  const pending = [];
+  rows.forEach(row=>{
+    const rawCreatedBy = row.raw && (row.raw.createdBy || row.raw.CreatedBy);
+    const current = row.createdBy;
+    const userId = looksLikeUserId(rawCreatedBy) ? rawCreatedBy : (looksLikeUserId(current) ? current : "");
+    if (!userId) return;
+    pending.push(resolveUserDisplayName(userId).then(name=>{
+      row.createdBy = name || "Unknown user";
+    }));
+  });
+  if (pending.length) await Promise.all(pending);
+  return rows;
+}
+
 function observationMatchesFilters(observation){
   const q = observationFilters.search.trim().toLowerCase();
   if (q && ![
@@ -1134,7 +1591,7 @@ function currentUserProfile(){
 function objectName(value){
   if (!value) return "";
   if (typeof value === "string") return value;
-  return value.name || value.Name || value.email || value.Email || "";
+  return value.name || value.Name || value.fullName || value.FullName || value.email || value.Email || "";
 }
 
 function normalizeUserProfile(user){
@@ -1597,6 +2054,27 @@ function inferReviewDetails(profile=currentUserProfile()){
   };
 }
 
+function promptTextForCheck(check){
+  return [
+    `${check.testId || ""} - ${check.title || ""}`.trim(),
+    `Regulatory reference: ${check.regulatoryReference || ""}`,
+    `Audit question: ${check.auditQuestion || ""}`,
+    `Instruction: ${check.message || ""}`,
+    `Pass criteria: ${check.passCriteria || ""}`,
+    `Review criteria: ${check.reviewCriteria || ""}`,
+    `Fail criteria: ${check.failCriteria || ""}`
+  ].join("\n");
+}
+
+async function compliancePromptsForReviewRole(reviewRole){
+  if (reviewRole === "roa") return COMPLIANCE_PROMPTS.roa.slice();
+  const checks = await loadSettingsChecks();
+  return checks
+    .slice()
+    .sort((a,b)=>(Number(a.index) || 0) - (Number(b.index) || 0))
+    .map(promptTextForCheck);
+}
+
 async function createSaraReview(){
   const profile = await ensureUserProfileForReview();
   const form = new FormData();
@@ -1604,7 +2082,8 @@ async function createSaraReview(){
   Object.entries(details).forEach(([key,value])=>{
     if (value) form.append(key, value);
   });
-  (COMPLIANCE_PROMPTS[role] || COMPLIANCE_PROMPTS.soa).forEach(prompt=>{
+  const prompts = await compliancePromptsForReviewRole(role);
+  prompts.forEach(prompt=>{
     form.append("prompts", prompt);
   });
   files.forEach(f=>form.append("files", f.file, f.file.name));
@@ -1693,7 +2172,8 @@ async function loadReviews(force=false){
     const payload = await res.json();
     const data = Array.isArray(payload) ? payload : (payload.data || payload.Data || []);
     activeReviewsLicenseeName = profile.licenseeName || "";
-    clientReviews = sortReviewsNewestFirst(scopeReviewsToLicensee(data.map(normalizeReview), activeReviewsLicenseeName));
+    const normalizedReviews = await enrichCreatorNames(data.map(normalizeReview));
+    clientReviews = sortReviewsNewestFirst(scopeReviewsToLicensee(normalizedReviews, activeReviewsLicenseeName));
     reviewsLoaded = true;
     reviewsPagination.page = 1;
     populateReviewFilters();
@@ -1725,7 +2205,8 @@ async function loadObservations(force=false){
     const payload = await res.json();
     const data = Array.isArray(payload) ? payload : (payload.data || payload.Data || []);
     activeObservationsLicenseeName = profile.licenseeName || "";
-    observations = sortReviewsNewestFirst(scopeReviewsToLicensee(data.map(normalizeObservation), activeObservationsLicenseeName));
+    const normalizedObservations = await enrichCreatorNames(data.map(normalizeObservation));
+    observations = sortReviewsNewestFirst(scopeReviewsToLicensee(normalizedObservations, activeObservationsLicenseeName));
     observationsLoaded = true;
     observationsPagination.page = 1;
     populateObservationFilters();
@@ -1961,9 +2442,11 @@ async function downloadReviewReport(id){
 function setActiveView(view){
   const isReviews = view === "reviews";
   const isObservations = view === "observations";
+  const isSettings = view === "settings";
   const isResult = view === "result";
   document.getElementById("reviewsView").hidden = !isReviews;
   document.getElementById("observationsView").hidden = !isObservations;
+  document.getElementById("settingsView").hidden = !isSettings;
   document.getElementById("uploadView").hidden = view !== "upload";
   document.getElementById("resultView").hidden = !isResult;
   document.getElementById("reviewsNav").classList.toggle("active", isReviews);
@@ -2184,9 +2667,64 @@ async function evaluate(meta, role){
     findings: (r.findings ?? r.Findings ?? []).map(x=>({
       testId:x.testId??x.TestId, question:x.question??x.Question,
       outcome:["Pass","Review","Fail"][x.outcome] ?? x.outcome ?? x.Outcome,
-      reasoning:x.reasoning??x.Reasoning, evidence:x.evidence??x.Evidence
+      reasoning:x.reasoning??x.Reasoning,
+      evidence:x.evidence??x.Evidence,
+      criteriaAssessment: normalizeCriteriaAssessment(x.criteriaAssessment ?? x.CriteriaAssessment),
+      evidenceItems: normalizeEvidenceItems(x.evidenceItems ?? x.EvidenceItems),
+      gaps: normalizeStringArray(x.gaps ?? x.Gaps),
+      recommendedAction: x.recommendedAction ?? x.RecommendedAction ?? ""
     }))
   };
+}
+
+function normalizeStringArray(value){
+  if (Array.isArray(value)) return value.map(v=>String(v || "").trim()).filter(Boolean);
+  if (!value) return [];
+  return String(value).split(/\r?\n|;\s+/).map(v=>v.trim()).filter(Boolean);
+}
+
+function normalizeCriteriaAssessment(value){
+  if (!Array.isArray(value)) return [];
+  return value.map(item=>({
+    criterion: item.criterion ?? item.Criterion ?? "",
+    finding: item.finding ?? item.Finding ?? "",
+    reason: item.reason ?? item.Reason ?? ""
+  })).filter(item=>item.criterion || item.reason);
+}
+
+function normalizeEvidenceItems(value){
+  if (!Array.isArray(value)) return [];
+  return value.map(item=>({
+    sourceText: item.sourceText ?? item.SourceText ?? "",
+    whyItMatters: item.whyItMatters ?? item.WhyItMatters ?? ""
+  })).filter(item=>item.sourceText || item.whyItMatters);
+}
+
+function renderFindingDetail(x){
+  const criteria = normalizeCriteriaAssessment(x.criteriaAssessment);
+  const evidenceItems = normalizeEvidenceItems(x.evidenceItems);
+  const gaps = normalizeStringArray(x.gaps);
+  const action = String(x.recommendedAction || "").trim();
+  let html = "";
+  if (criteria.length){
+    html += `<div class="finding-block"><b>Criteria assessment</b><ul class="criteria-list">` +
+      criteria.map(item=>`<li><span class="finding-tag">${escapeHtml(item.finding || "Assessed")}</span>${escapeHtml(item.criterion)}${item.reason ? `: ${escapeHtml(item.reason)}` : ""}</li>`).join("") +
+      `</ul></div>`;
+  }
+  if (evidenceItems.length){
+    html += `<div class="finding-block"><b>Evidence</b><ul class="evidence-list">` +
+      evidenceItems.map(item=>`<li>${item.sourceText ? `<q>${escapeHtml(item.sourceText)}</q>` : ""}${item.whyItMatters ? ` ${escapeHtml(item.whyItMatters)}` : ""}</li>`).join("") +
+      `</ul></div>`;
+  }
+  if (gaps.length){
+    html += `<div class="finding-block"><b>Gaps or residual risk</b><ul class="gap-list">` +
+      gaps.map(gap=>`<li>${escapeHtml(gap)}</li>`).join("") +
+      `</ul></div>`;
+  }
+  if (action){
+    html += `<div class="finding-block"><b>Recommended action</b><div class="recommended-action">${escapeHtml(action)}</div></div>`;
+  }
+  return html ? `<div class="finding-detail">${html}</div>` : "";
 }
 
 // ---------- Run ----------
@@ -2269,6 +2807,7 @@ function renderResult(r, options={}){
         <span class="chip ${x.outcome}">${escapeHtml(x.outcome)}</span></div>
       <p class="why">${escapeHtml(x.reasoning||"")}</p>
       ${x.evidence?`<div class="ev">📎 ${escapeHtml(x.evidence)}</div>`:""}
+      ${renderFindingDetail(x)}
     </div>`;
   });
 
@@ -2350,6 +2889,29 @@ document.getElementById("exportWord").onclick = ()=>{
       ? '<p style="margin:10px 0 3px 0;font-weight:bold;color:#1F3864">'+E(it)+'</p>'
       : '<p style="margin:0 0 5px 20px;text-indent:-14px">•&nbsp; '+E(it)+'</p>'
   ).join("");
+  const listHtml = (items)=> items.map(item=>'<p style="margin:0 0 4px 18px;text-indent:-12px">•&nbsp; '+item+'</p>').join("");
+  const criteriaHtml = (x)=>{
+    const items = normalizeCriteriaAssessment(x.criteriaAssessment);
+    if (!items.length) return "";
+    return '<p style="margin:6px 0 2px 0"><b>Criteria assessment:</b></p>'
+      + listHtml(items.map(item=>'<b>'+E(item.finding || "Assessed")+'</b> - '+E(item.criterion)+(item.reason ? ': '+E(item.reason) : '')));
+  };
+  const evidenceHtml = (x)=>{
+    const items = normalizeEvidenceItems(x.evidenceItems);
+    if (!items.length) return x.evidence ? '<p style="color:#555;margin:0"><i>Evidence: '+E(x.evidence)+'</i></p>' : "";
+    return '<p style="margin:6px 0 2px 0"><b>Evidence:</b></p>'
+      + listHtml(items.map(item=>(item.sourceText ? '<i>"'+E(item.sourceText)+'"</i>' : '')+(item.whyItMatters ? ' - '+E(item.whyItMatters) : '')));
+  };
+  const gapsHtml = (x)=>{
+    const gaps = normalizeStringArray(x.gaps);
+    if (!gaps.length) return "";
+    return '<p style="margin:6px 0 2px 0"><b>Gaps or residual risk:</b></p>'
+      + listHtml(gaps.map(gap=>E(gap)));
+  };
+  const actionHtml = (x)=>{
+    const action = String(x.recommendedAction || "").trim();
+    return action ? '<p style="margin:6px 0 4px 0"><b>Recommended action:</b> '+E(action)+'</p>' : "";
+  };
 
   let html = '<html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:w="urn:schemas-microsoft-com:office:word" xmlns="http://www.w3.org/TR/REC-html40">'
     + '<head><meta charset="utf-8"><title>SARA 2.0 Pre-Vet Result</title>'
@@ -2378,7 +2940,10 @@ document.getElementById("exportWord").onclick = ()=>{
         return '<p style="margin:12px 0 2px 0"><b>2.'+(i+1)+'&nbsp; '+E(s.q)+' — <span style="color:'+col(x.outcome)+'">'+E(x.outcome)+'</span></b></p>'
           + '<p style="color:#666;margin:0 0 4px 0"><i>Basis: '+E(s.basis)+'</i></p>'
           + '<p style="margin:0 0 4px 0">'+E(x.reasoning||"")+'</p>'
-          + (x.evidence?'<p style="color:#555;margin:0"><i>Evidence: '+E(x.evidence)+'</i></p>':''); }).join("")
+          + criteriaHtml(x)
+          + evidenceHtml(x)
+          + gapsHtml(x)
+          + actionHtml(x); }).join("")
     + (r.adviserSuggestion ? '<h2 style="color:#2E75B6">3. Observations &amp; coaching</h2>'+obsHtml(r.adviserSuggestion) : '')
     + '<h2 style="color:#2E75B6">'+(r.adviserSuggestion?'4':'3')+'. Outcome &amp; next steps</h2>'
     + '<p><b>Outcome:</b> '+E(r.summary||"")+'<br><b>Routing:</b> '+E(route)+'.</p>'
@@ -2423,6 +2988,14 @@ function showDashboard(){
 function showUploadWorkflow(){
   showApp();
   startNewReview({skipPathUpdate:true});
+}
+
+function showSettings(){
+  showApp();
+  populateSettingsFilters();
+  renderSettingsChecks();
+  loadSettingsChecks();
+  setActiveView("settings");
 }
 
 function showResultRoute(reviewId){
@@ -2512,6 +3085,8 @@ window.addEventListener("popstate", ()=>{
     showResultRoute(resultReviewId);
   } else if (window.location.pathname === UPLOAD_PATH){
     showUploadWorkflow();
+  } else if (window.location.pathname === SETTINGS_PATH){
+    showSettings();
   } else {
     showDashboard();
   }
@@ -2584,6 +3159,11 @@ document.getElementById("profileBtn").onclick = ()=>{
   showUserProfile();
 };
 
+document.getElementById("settingsBtn").onclick = ()=>{
+  setAppPath(SETTINGS_PATH);
+  showSettings();
+};
+
 document.getElementById("logoutBtn").onclick = ()=>{
   sessionStorage.removeItem(AUTH_KEY);
   sessionStorage.removeItem(AUTH_TOKEN_KEY);
@@ -2642,6 +3222,21 @@ document.getElementById("observationPracticeFilter").addEventListener("change", 
   observationFilters.practiceName = e.target.value;
   observationsPagination.page = 1;
   renderObservations();
+});
+
+document.getElementById("settingsReviewTypeFilter").addEventListener("change", e=>{
+  settingsFilters.reviewType = e.target.value;
+  renderSettingsChecks();
+});
+
+document.getElementById("settingsAdviceTypeFilter").addEventListener("change", e=>{
+  settingsFilters.adviceType = e.target.value;
+  renderSettingsChecks();
+});
+
+document.getElementById("settingsInclusionFilter").addEventListener("change", e=>{
+  settingsFilters.soaInclusion = e.target.value;
+  renderSettingsChecks();
 });
 
 document.getElementById("reviewsPageSize").addEventListener("change", e=>{
@@ -2796,6 +3391,8 @@ populateReviewFilters();
 renderReviews();
 populateObservationFilters();
 renderObservations();
+populateSettingsFilters();
+renderSettingsChecks();
 const hasAuthenticatedSession =
   sessionStorage.getItem(AUTH_KEY) === "true" && Boolean(sessionStorage.getItem(AUTH_TOKEN_KEY));
 const initialResultReviewId = resultReviewIdFromPath();
@@ -2803,6 +3400,8 @@ if (initialResultReviewId && hasAuthenticatedSession) {
   showResultRoute(initialResultReviewId);
 } else if (window.location.pathname === UPLOAD_PATH && hasAuthenticatedSession) {
   showUploadWorkflow();
+} else if (window.location.pathname === SETTINGS_PATH && hasAuthenticatedSession) {
+  showSettings();
 } else if (hasAuthenticatedSession) {
   if (window.location.pathname !== DASHBOARD_PATH) setAppPath(DASHBOARD_PATH, true);
   showDashboard();
