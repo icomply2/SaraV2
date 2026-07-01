@@ -352,6 +352,8 @@ Catalogue checks:
 Apply firm policy: asset allocation variance up to 10 percentage points outside risk-profile min/max ranges is permitted and should be a coaching observation, not a Fail. Low-level document-quality issues should be listed in adviserSuggestion and should not by themselves force compliance review.
 
 Outcome logic:
-- roaPermitted here means eligible for adviser self-approval and is true only if NO regulatory test is Fail.
+- For this SOA pre-vet, do not use RoA / Record of Advice wording in the summary or findings.
+- The JSON field roaPermitted is a legacy compatibility field. For SOA pre-vet, treat it as "SOA has no failed tests". It does not mean this is an RoA.
+- If requiresComplianceReview is true, summary must say the SOA requires compliance review, not that it is self-approvable.
 - requiresComplianceReview is true if ANY regulatory test is Review or Fail.
-- summary is a one-line overall outcome."""
+- summary is a one-line overall outcome about the Statement of Advice / SOA."""
