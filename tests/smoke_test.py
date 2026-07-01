@@ -146,6 +146,27 @@ class FakeHttpRequest:
 
 def smoke_engine_request_text():
     sara_engine = importlib.import_module("sara_engine")
+    check_catalog = importlib.import_module("check_catalog")
+    catalogue_status = check_catalog.validate_catalogue()
+    assert_equal(catalogue_status["count"], 17, "soa check catalogue count")
+    assert_equal(catalogue_status["uniqueIndexes"], True, "soa check catalogue unique indexes")
+    assert_equal(catalogue_status["uniqueTestIds"], True, "soa check catalogue unique test ids")
+    assert_equal(catalogue_status["missingFields"], [], "soa check catalogue required fields")
+
+    system_prompt = sara_engine.build_system_prompt("soa")
+    assert_in("SOA-01", system_prompt, "soa prompt first schema check")
+    assert_in("SOA-17", system_prompt, "soa prompt last schema check")
+    assert_in("Pass criteria:", system_prompt, "soa prompt pass criteria")
+    assert_in("Review criteria:", system_prompt, "soa prompt review criteria")
+    assert_in("Fail criteria:", system_prompt, "soa prompt fail criteria")
+    assert_in("criteriaAssessment", system_prompt, "soa prompt structured criteria field")
+    assert_in("Do not merely state that a heading or section exists", system_prompt, "soa prompt anti-heading-only instruction")
+
+    finding_schema = sara_engine.RESULT_SCHEMA["properties"]["findings"]["items"]
+    for field in ("criteriaAssessment", "evidenceItems", "gaps", "recommendedAction"):
+        if field not in finding_schema["required"]:
+            raise AssertionError(f"finding schema requires {field}")
+
     text = sara_engine._build_user_text(
         "roa",
         {
@@ -206,7 +227,7 @@ def smoke_flask_entrypoint():
             assert_equal(bad.status_code, 400, "flask invalid status")
             assert_equal(bad.get_json()["error"], "invalid_request", "flask invalid error")
 
-            for route in ("/login", "/dashboard", "/upload", "/result/review-1"):
+            for route in ("/login", "/dashboard", "/upload", "/settings", "/result/review-1"):
                 page = client.get(route)
                 assert_equal(page.status_code, 200, f"flask frontend route {route}")
                 assert_in(b"SARA", page.data, f"flask frontend content {route}")
@@ -244,7 +265,7 @@ def smoke_flask_entrypoint():
                         }
                     )
                 if req.full_url.endswith("/api/Users/Search"):
-                    return FakeUpstreamResponse({"data": [{"id": "user-1", "name": "Smoke User"}]})
+                    return FakeUpstreamResponse({"data": [{"id": "user-1", "email": "smoke@example.com"}]})
                 if req.full_url.endswith("/api/Users/user-1"):
                     return FakeUpstreamResponse(
                         {
@@ -365,6 +386,13 @@ def smoke_flask_entrypoint():
                 "Smoke Licensee",
                 "flask current user licensee",
             )
+            checks = client.get(
+                "/api/sara/checks?reviewType=SOA%20Pre-Vet",
+                headers={"Authorization": "Bearer smoke-token"},
+            )
+            assert_equal(checks.status_code, 200, "flask checks status")
+            assert_equal(len(checks.get_json()["data"]), 17, "flask checks result count")
+            assert_equal(checks.get_json()["data"][0]["testId"], "SOA-01", "flask checks first test id")
             client_search = client.post(
                 "/api/sara/client-profiles/search",
                 json={"clientName": "Smoke", "licenseeName": "Smoke Licensee", "practiceName": "Smoke Practice"},
@@ -491,7 +519,7 @@ def smoke_flask_entrypoint():
                 "flask create review prompts field",
             )
             assert_equal(
-                "OBJ Did the adviser identify the client's objectives?" in create_body,
+                "SOA-01 - 1 - Summary of the Advice" in create_body,
                 True,
                 "flask create review default prompt",
             )

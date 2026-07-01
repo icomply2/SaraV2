@@ -23,6 +23,7 @@ API_DIR = ROOT / "api"
 FRONTEND_DIR = ROOT / "frontend"
 sys.path.insert(0, str(API_DIR))
 
+from check_catalog import default_prompts_for_review_type, get_checks  # noqa: E402
 from sara_engine import run_prevet  # noqa: E402
 
 app = Flask(__name__, static_folder=None)
@@ -32,6 +33,7 @@ PREVET_ERROR_MESSAGE = (
     "if the problem continues."
 )
 USER_LOOKUP_CACHE = {}
+USER_DETAIL_NAME_CACHE = {}
 
 SOA_COMPLIANCE_PROMPTS = [
     "OBJ Did the adviser identify the client's objectives? (s961B(2)(a))",
@@ -151,9 +153,7 @@ def _upstream_error_details(raw_body):
 
 
 def _default_prompts_for_review_type(review_type):
-    if "roa" in (review_type or "").lower():
-        return ROA_COMPLIANCE_PROMPTS
-    return SOA_COMPLIANCE_PROMPTS
+    return default_prompts_for_review_type(review_type)
 
 
 def _handle(role):
@@ -291,15 +291,41 @@ def _current_user_details():
 def _display_user_name(user):
     if not isinstance(user, dict):
         return ""
+    first_name = user.get("firstName") or user.get("FirstName") or user.get("givenName") or user.get("GivenName")
+    last_name = user.get("lastName") or user.get("LastName") or user.get("surname") or user.get("Surname")
+    full_name = " ".join(part for part in (first_name, last_name) if part).strip()
     return (
         user.get("name")
         or user.get("Name")
+        or user.get("fullName")
+        or user.get("FullName")
+        or full_name
         or user.get("userName")
         or user.get("UserName")
         or user.get("email")
         or user.get("Email")
         or ""
     )
+
+
+def _extract_user_object(payload):
+    user = _extract_data(payload) or payload
+    if isinstance(user, dict):
+        for key in ("user", "User", "profile", "Profile", "userProfile", "UserProfile"):
+            nested = user.get(key)
+            if isinstance(nested, dict):
+                return nested
+    return user
+
+
+def _display_user_name_without_email(user):
+    if not isinstance(user, dict):
+        return ""
+    email = str(user.get("email") or user.get("Email") or "").strip().lower()
+    name = str(_display_user_name(user) or "").strip()
+    if name and name.lower() != email:
+        return name
+    return ""
 
 
 def _fetch_user_lookup(api_base, headers, licencee_name):
@@ -326,7 +352,7 @@ def _fetch_user_lookup(api_base, headers, licencee_name):
             if not isinstance(user, dict):
                 continue
             user_id = str(user.get("id") or user.get("Id") or "").strip()
-            name = _display_user_name(user)
+            name = _display_user_name_without_email(user)
             if user_id and name:
                 lookup[user_id] = name
     except Exception:
@@ -334,6 +360,36 @@ def _fetch_user_lookup(api_base, headers, licencee_name):
 
     USER_LOOKUP_CACHE[cache_key] = lookup
     return lookup
+
+
+def _fetch_user_detail_name(api_base, headers, user_id):
+    user_id = str(user_id or "").strip()
+    if not user_id:
+        return ""
+
+    cache_key = (api_base, user_id, headers.get("Authorization", ""), headers.get("x-api-key", ""))
+    if cache_key in USER_DETAIL_NAME_CACHE:
+        return USER_DETAIL_NAME_CACHE[cache_key]
+
+    url = f"{api_base}/api/Users/{urllib.parse.quote(user_id)}"
+    req = urllib.request.Request(url, headers=headers)
+
+    name = ""
+    try:
+        with urllib.request.urlopen(req, timeout=20) as resp:
+            payload = json.loads(resp.read().decode("utf-8"))
+        user = _extract_user_object(payload)
+        name = _display_user_name(user)
+    except urllib.error.HTTPError as exc:
+        if exc.code == 404:
+            app.logger.info("created-by user id not found user_id=%s", user_id)
+        else:
+            app.logger.warning("user detail lookup failed user_id=%s status=%s", user_id, exc.code)
+    except Exception:
+        app.logger.exception("user detail lookup failed user_id=%s", user_id)
+
+    USER_DETAIL_NAME_CACHE[cache_key] = name
+    return name
 
 
 def _search_users(api_base, headers, licensee_name="", practice_name=""):
@@ -373,14 +429,14 @@ def _enrich_reviews_with_usernames(body, api_base, headers, licencee_name):
         return body
 
     users = _fetch_user_lookup(api_base, headers, licencee_name)
-    if not users:
-        return body
 
     for row in rows:
         if not isinstance(row, dict):
             continue
         created_by = str(row.get("createdBy") or row.get("CreatedBy") or "").strip()
-        username = users.get(created_by)
+        username = users.get(created_by) if users else ""
+        if not username:
+            username = _fetch_user_detail_name(api_base, headers, created_by)
         if username:
             row["createdByUserName"] = username
 
@@ -403,12 +459,20 @@ def _fetch_user_detail_response(api_base, user_id):
         body = exc.read().decode("utf-8", errors="replace")
         request_id = uuid.uuid4().hex
         message = _upstream_error_message(body, "Could not load user profile.")
-        app.logger.exception(
-            "user detail API failed request_id=%s status=%s message=%s",
-            request_id,
-            exc.code,
-            message,
-        )
+        if exc.code == 404:
+            app.logger.info(
+                "user detail API not found request_id=%s user_id=%s message=%s",
+                request_id,
+                user_id,
+                message,
+            )
+        else:
+            app.logger.warning(
+                "user detail API failed request_id=%s status=%s message=%s",
+                request_id,
+                exc.code,
+                message,
+            )
         return _error("user_detail_failed", message, exc.code, request_id)
     except Exception:
         request_id = uuid.uuid4().hex
@@ -742,6 +806,12 @@ def sara_login():
         request_id = uuid.uuid4().hex
         app.logger.exception("login API failed request_id=%s", request_id)
         return _error("login_failed", "Login could not be completed.", 502, request_id)
+
+
+@app.get("/api/sara/checks")
+def sara_checks():
+    review_type = request.args.get("reviewType") or request.args.get("review_type")
+    return _json({"data": get_checks(review_type), "status": True})
 
 
 @app.post("/api/sara/client-profiles/search")
@@ -1195,6 +1265,7 @@ def sara_review_detail(review_id):
 @app.get("/sara")
 @app.get("/dashboard")
 @app.get("/upload")
+@app.get("/settings")
 @app.get("/result/<review_id>")
 def index():
     return send_from_directory(FRONTEND_DIR, "index.html")

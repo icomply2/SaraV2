@@ -12,6 +12,8 @@ import json
 import os
 from pathlib import Path
 
+from check_catalog import render_soa_prompt
+
 MAX_DOC_CHARS = 200_000
 MAX_TOTAL_CHARS = 700_000
 
@@ -88,8 +90,48 @@ RESULT_SCHEMA = {
                     "outcome": {"type": "string", "enum": ["Pass", "Review", "Fail"]},
                     "reasoning": {"type": "string"},
                     "evidence": {"type": "string"},
+                    "criteriaAssessment": {
+                        "type": "array",
+                        "items": {
+                            "type": "object",
+                            "properties": {
+                                "criterion": {"type": "string"},
+                                "finding": {"type": "string", "enum": ["Met", "Partly met", "Not met", "Not applicable"]},
+                                "reason": {"type": "string"},
+                            },
+                            "required": ["criterion", "finding", "reason"],
+                            "additionalProperties": False,
+                        },
+                    },
+                    "evidenceItems": {
+                        "type": "array",
+                        "items": {
+                            "type": "object",
+                            "properties": {
+                                "sourceText": {"type": "string"},
+                                "whyItMatters": {"type": "string"},
+                            },
+                            "required": ["sourceText", "whyItMatters"],
+                            "additionalProperties": False,
+                        },
+                    },
+                    "gaps": {
+                        "type": "array",
+                        "items": {"type": "string"},
+                    },
+                    "recommendedAction": {"type": "string"},
                 },
-                "required": ["testId", "question", "outcome", "reasoning", "evidence"],
+                "required": [
+                    "testId",
+                    "question",
+                    "outcome",
+                    "reasoning",
+                    "evidence",
+                    "criteriaAssessment",
+                    "evidenceItems",
+                    "gaps",
+                    "recommendedAction",
+                ],
                 "additionalProperties": False,
             },
         },
@@ -116,7 +158,11 @@ Scoring scheme for every test:
 
 Rules:
 - Base findings ONLY on the documents provided. Anything not provided is "not provided" - flag it as Review, or Fail if mandatory for the role. Never invent evidence.
-- Quote short evidence in the evidence field where you can; use "" if none.
+- Do not merely state that a heading or section exists. Test whether the content satisfies the compliance obligation.
+- For every finding, provide a compliance basis that explains the facts extracted, the criteria applied, and why the result follows.
+- Quote short evidence in evidenceItems.sourceText where you can; use [] if no evidence is available.
+- Keep reasoning as a concise compatibility summary of the same analysis. Keep evidence as a short semicolon-separated compatibility summary of the evidenceItems.
+- Use criteriaAssessment for criterion-by-criterion analysis. Use gaps for weaknesses, ambiguity, missing evidence, or residual compliance risk. Use recommendedAction for the adviser/compliance next step.
 - roaPermitted/eligibility is true only if NO test failed.
 - requiresComplianceReview is true if ANY test is Review or Fail.
 - adviserSuggestion should give concrete remediation coaching for concerns or low-level tidy-up observations.
@@ -133,31 +179,7 @@ RA-04 Does the further advice stay within the basis and product scope of the SOA
 RA-05 Does the RoA record the required content and is it retained? Review if content is thin or absent.
 Set summary to a one-line determination.
 """,
-    "soa": _BASE + """
-ROLE: SOA pre-vet - assess the appropriateness and disclosure of this Statement of Advice before it goes to the client. The SOA is a SINGLE, self-contained document: assess what the SOA itself contains.
-
-Produce ONE finding for EACH question, in this order, using the given testId and including the legislative basis in question text:
-OBJ Did the adviser identify the client's objectives? (s961B(2)(a))
-FINSIT Did the adviser identify the financial situation and needs? (s961B(2)(a))
-RISK Has the adviser identified the client's risk profile? (s961B(2))
-SCOPE Did the adviser identify the subject matter and scope of advice, incl. limitations? (s961B(2)(b))
-PRODUCT Does the SOA explain how the recommended product meets the client's objective? (s961G)
-PROPERTY Is any direct property, a non-financial product, recommended? (Pass / N/A if none)
-ALLOC Does the recommended asset allocation meet the risk profile? (s961B / s961G)
-JUDGE Are the adviser's judgements based on the client's relevant circumstances? (s961B(2)(f))
-NEEDS Has a needs analysis been completed, incl. insurance where in scope? (best interests / s961G)
-FEES Are fees payable and remuneration/commissions adequately disclosed? (s947B / conflicted remuneration)
-PDS Is a Product Disclosure Statement provided/referenced for recommended products?
-OFA Is an ongoing/annual fee agreement and consent to deduct fees present? (s962)
-CREDIT Does the SOA avoid unlicensed credit advice? (NCCP Act 2009)
-
-Apply firm policy: asset allocation variance up to 10 percentage points outside risk-profile min/max ranges is permitted and should be a coaching observation, not a Fail. Low-level document-quality issues should be listed in adviserSuggestion and should not by themselves force compliance review.
-
-Outcome logic:
-- roaPermitted here means eligible for adviser self-approval and is true only if NO regulatory test is Fail.
-- requiresComplianceReview is true if ANY regulatory test is Review or Fail.
-- summary is a one-line overall outcome.
-""",
+    "soa": _BASE + "\n" + render_soa_prompt(),
 }
 
 
@@ -195,6 +217,10 @@ def _build_user_text(role, payload):
     return "\n".join(lines)
 
 
+def build_system_prompt(role):
+    return _ROLE_PROMPTS.get(role, _ROLE_PROMPTS["soa"])
+
+
 def run_prevet(role, payload):
     if role not in _ROLE_PROMPTS:
         role = "soa"
@@ -202,7 +228,7 @@ def run_prevet(role, payload):
     resp = client.chat.completions.create(
         model=_get_model(role),
         messages=[
-            {"role": "system", "content": _ROLE_PROMPTS[role]},
+            {"role": "system", "content": build_system_prompt(role)},
             {"role": "user", "content": _build_user_text(role, payload)},
         ],
         response_format=RESPONSE_FORMAT,
